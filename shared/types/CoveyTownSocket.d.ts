@@ -23,7 +23,32 @@ export type TownSettingsUpdate = {
   friendlyName?: string;
   isPubliclyListed?: boolean;
 }
+export type Color = 'Red' | 'Green' | 'Blue' | 'Yellow' | 'Wild';
 
+export type Value =
+  | '0'
+  | '1'
+  | '2'
+  | '3'
+  | '4'
+  | '5'
+  | '6'
+  | '7'
+  | '8'
+  | '9'
+  | 'Skip'
+  | 'Reverse'
+  | 'Draw Two'
+  | 'Wild'
+  | 'Wild Draw Four';
+
+
+export interface Card {
+  color: Color;
+  value: Value;
+  canPlayOn(topCard: Card): boolean;
+  play(): void;
+}
 export type Direction = 'front' | 'back' | 'left' | 'right';
 export interface Player {
   id: string;
@@ -85,3 +110,4 @@ export interface ClientToServerEvents {
   playerMovement: (movementData: PlayerLocation) => void;
   interactableUpdate: (update: Interactable) => void;
 }
+

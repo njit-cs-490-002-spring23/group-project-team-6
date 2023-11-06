@@ -120,6 +120,11 @@ export default class TownGameScene extends Phaser.Scene {
       '16_Grocery_store_32x32',
       this._resourcePathPrefix + '/assets/tilesets/16_Grocery_store_32x32.png',
     );
+    /*
+    this.load.image(
+      ''
+    )
+    */
     this.load.tilemapTiledJSON('map', this._resourcePathPrefix + '/assets/tilemaps/indoors.json');
     this.load.atlas(
       'atlas',
