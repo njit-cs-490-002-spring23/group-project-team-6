@@ -10,12 +10,13 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
   public constructor() {
     super({
         mostRecentMove: null,
-        currentPlayerMove: 'firstPlayerID', //need to implement
+        currentPlayerMove: '', //need to implement
         status: 'WAITING_TO_START',
+        numberOfMovesSoFar: 0,
     });
   }
   public applyMove(move: GameMove<UnoMove>): void {
-
+    
   }
   public _join(player: Player): void {
 

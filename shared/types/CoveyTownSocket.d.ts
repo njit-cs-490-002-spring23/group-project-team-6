@@ -17,7 +17,50 @@ export type TownJoinResponse = {
   interactables: Interactable[];
 }
 
-export type Interactable = ViewingArea | ConversationArea;
+export type GameInstanceID = string;
+
+export interface GameInstance<T extends GameState> {
+    state: T;
+    id: GameInstanceID;
+    players: PlayerID[];
+    result?: GameResult;
+}
+
+export interface GameMove<MoveType> {
+    playerID: PlayerID;
+    gameID: GameInstanceID;
+    move: MoveType;
+}
+
+export interface GameResult {
+    gameID: GameInstanceID;
+    scores: { [playerName: string]: number };
+}
+
+export type GameStatus = 'IN_PROGRESS' | 'WAITING_TO_START' | 'OVER';
+
+export interface GameState {
+    status: GameStatus;
+}
+
+export interface WinnableGameState extends GameState {
+    winner?: PlayerID;
+}
+export interface GameArea<T extends GameState> extends Interactable {
+    game: GameInstance<T> | undefined;
+    history: GameResult[];
+}
+
+export type Interactable = ConversationArea | ViewingArea | UnoArea;
+
+export interface UnoGameState extends WinnableGameState {
+    mostRecentMove: UnoMove | null;
+    currentPlayerMove: PlayerId;
+    numberOfMovesSoFar: number;
+  }
+export interface UnoMove {
+    cardToPlace: Card;
+}
 
 export type TownSettingsUpdate = {
   friendlyName?: string;
@@ -49,6 +92,9 @@ export interface Card {
   canPlayOn(topCard: Card): boolean;
   play(): void;
 }
+
+
+
 export type Direction = 'front' | 'back' | 'left' | 'right';
 export interface Player {
   id: string;
