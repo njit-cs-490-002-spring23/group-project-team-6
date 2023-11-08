@@ -1,9 +1,8 @@
 import Player from '../../lib/Player';
 import {
-  GameArea as GameAreaModel,
   GameResult,
   GameState,
-  InteractableType,
+  Interactable,
 } from '../../types/CoveyTownSocket';
 import InteractableArea from '../InteractableArea';
 import Game from './Game';
@@ -26,7 +25,7 @@ export default abstract class GameArea<
   public get history(): GameResult[] {
     return this._history;
   }
-
+  /*
   public toModel(): GameAreaModel<GameType['state']> {
     return {
       id: this.id,
@@ -36,12 +35,12 @@ export default abstract class GameArea<
       type: this.getType(),
     };
   }
-
+  */
   public get isActive(): boolean {
     return true;
   }
 
-  protected abstract getType(): InteractableType;
+  protected abstract getType(): Interactable;
 
   public remove(player: Player): void {
     if (this._game) {

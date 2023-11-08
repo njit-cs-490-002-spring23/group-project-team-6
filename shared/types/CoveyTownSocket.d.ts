@@ -1,3 +1,4 @@
+import Player from '../../lib/Player';
 export type TownJoinResponse = {
   /** Unique ID that represents this player * */
   userID: string;
@@ -26,10 +27,10 @@ export interface GameInstance<T extends GameState> {
     result?: GameResult;
 }
 
-export interface GameMove<MoveType> {
+export interface UnoMove {
     playerID: PlayerID;
     gameID: GameInstanceID;
-    move: MoveType;
+    cardPlaced: Card;
 }
 
 export interface GameResult {
@@ -39,34 +40,33 @@ export interface GameResult {
 
 export type GameStatus = 'IN_PROGRESS' | 'WAITING_TO_START' | 'OVER';
 
-export interface GameState {
-    status: GameStatus;
-}
-
-export interface WinnableGameState extends GameState {
-    winner?: PlayerID;
-}
-export interface GameArea<T extends GameState> extends Interactable {
-    game: GameInstance<T> | undefined;
-    history: GameResult[];
-}
-
 export type Interactable = ConversationArea | ViewingArea | UnoArea;
 
-export interface UnoGameState extends WinnableGameState {
-    mostRecentMove: UnoMove | null;
-    currentPlayerMove: PlayerId;
-    numberOfMovesSoFar: number;
-  }
-export interface UnoMove {
-    cardToPlace: Card;
+
+export interface GameState{
+  status: GameStatus;
+}
+
+export type UnoGameDirection = 'Clockwise' | 'Counter_Clockwise'
+
+export interface UnoGameState extends GameState{
+  winner?: PlayerID;
+  mostRecentMove: UnoMove | null;
+  currentMovePlayer: Player | null;
+  currentColor: Color;
+  numberOfMovesSoFar: number;
+  currentCardValue: Value;
+  direction: UnoGameDirection;
+}
+  export interface UnoMove  {
+    cardPlaced: Card;
 }
 
 export type TownSettingsUpdate = {
   friendlyName?: string;
   isPubliclyListed?: boolean;
 }
-export type Color = 'Red' | 'Green' | 'Blue' | 'Yellow' | 'Wild';
+export type Color = 'Red' | 'Green' | 'Blue' | 'Yellow' | 'Wild' | 'None';
 
 export type Value =
   | '0'
@@ -83,7 +83,8 @@ export type Value =
   | 'Reverse'
   | 'Draw Two'
   | 'Wild'
-  | 'Wild Draw Four';
+  | 'Wild Draw Four'
+  | 'None';
 
 
 export interface Card {
@@ -93,13 +94,21 @@ export interface Card {
   play(): void;
 }
 
+export type DeckOfCards = Card[];
+
+
 
 
 export type Direction = 'front' | 'back' | 'left' | 'right';
-export interface Player {
+
+export interface UnoPlayer extends Player{
   id: string;
   userName: string;
   location: PlayerLocation;
+  playerToLeft?: Player | null;
+  playerToRight?: Player | null;
+  cardsInHand?: Card[] | null;
+  readyUp?: boolean | null;
 };
 
 export type XY = { x: number, y: number };
@@ -120,7 +129,11 @@ export type ChatMessage = {
   body: string;
   dateCreated: Date;
 };
-
+export interface GameArea {
+  id: string;
+  topic?: string;
+  occupantsByID: string[];
+}
 export interface ConversationArea {
   id: string;
   topic?: string;

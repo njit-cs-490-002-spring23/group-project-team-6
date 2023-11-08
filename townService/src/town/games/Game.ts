@@ -3,9 +3,11 @@ import Player from '../../lib/Player';
 import {
   GameInstance,
   GameInstanceID,
-  GameMove,
+  UnoMove,
+  UnoPlayer,
   GameResult,
   GameState,
+  DeckOfCards,
 } from '../../types/CoveyTownSocket';
 
 /**
@@ -19,7 +21,7 @@ export default abstract class Game<StateType extends GameState, MoveType> {
 
   protected _result?: GameResult;
 
-  protected _players: Player[] = [];
+  protected _players: UnoPlayer[] = [];
 
   /**
    * Creates a new Game instance.
@@ -38,14 +40,24 @@ export default abstract class Game<StateType extends GameState, MoveType> {
   protected set state(newState: StateType) {
     this._state = newState;
   }
-
+  /**
+   * Adds a card to a players hand in game.
+   * This method should be implemented by subclasses.
+   * @param player The player to draw the card.
+   */
+  public abstract drawFromDeck(player: UnoPlayer) : void
+  /**
+   * Create a new deck for the game.
+   * This method should be implemented by subclasses.
+   */
+  public abstract createDeck() : DeckOfCards;
   /**
    * Apply a move to the game.
    * This method should be implemented by subclasses.
    * @param move A move to apply to the game.
    * @throws InvalidParametersError if the move is invalid.
    */
-  public abstract applyMove(move: GameMove<MoveType>): void;
+  public abstract applyMove(move: UnoMove): void;
 
   /**
    * Attempt to join a game.
@@ -53,7 +65,7 @@ export default abstract class Game<StateType extends GameState, MoveType> {
    * @param player The player to join the game.
    * @throws InvalidParametersError if the player can not join the game
    */
-  protected abstract _join(player: Player): void;
+  protected abstract _join(player: UnoPlayer): void;
 
   /**
    * Attempt to leave a game.
@@ -61,7 +73,7 @@ export default abstract class Game<StateType extends GameState, MoveType> {
    * @param player The player to leave the game.
    * @throws InvalidParametersError if the player can not leave the game
    */
-  protected abstract _leave(player: Player): void;
+  protected abstract _leave(player: UnoPlayer): void;
 
   /**
    * Attempt to join a game.
@@ -69,7 +81,7 @@ export default abstract class Game<StateType extends GameState, MoveType> {
    * @param player The player to join the game.
    * @throws InvalidParametersError if the player can not join the game
    */
-  public join(player: Player): void {
+  public join(player: UnoPlayer): void {
     this._join(player);
     this._players.push(player);
   }
@@ -80,7 +92,7 @@ export default abstract class Game<StateType extends GameState, MoveType> {
    * @param player The player to leave the game.
    * @throws InvalidParametersError if the player can not leave the game
    */
-  public leave(player: Player): void {
+  public leave(player: UnoPlayer): void {
     this._leave(player);
     this._players = this._players.filter(p => p.id !== player.id);
   }
