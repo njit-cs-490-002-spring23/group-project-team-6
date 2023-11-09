@@ -296,6 +296,10 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
     this.emit('conversationAreasChanged', newConversationAreas);
   }
 
+  // private set _UnoArea(newUnoAreas: UnoGameController[]){
+  //     this._UnoGameSession = newUnoAreas;
+  //     this.emit('unoGameChanged', Uno)
+  // }
   public get interactableEmitter() {
     return this._interactableEmitter;
   }
