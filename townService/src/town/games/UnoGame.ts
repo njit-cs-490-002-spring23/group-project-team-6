@@ -4,8 +4,16 @@ import {
   UnoGameState, 
   UnoMove 
 } from '../../types/CoveyTownSocket';
+import InvalidParametersError, {
+  GAME_FULL_MESSAGE,
+  GAME_NOT_IN_PROGRESS_MESSAGE,
+  MOVE_NOT_YOUR_TURN_MESSAGE,
+  PLAYER_ALREADY_IN_GAME_MESSAGE,
+  PLAYER_NOT_IN_GAME_MESSAGE,
+} from '../../lib/InvalidParametersError';
 import Game from './Game';
 
+const MAX_PLAYERS = 6;
 /**
  * A Uno is a Game that implements the rules of Uno.
  * @see https://en.wikipedia.org/wiki/Uno_(card_game)
@@ -69,19 +77,21 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     const playerIDList: string[] = this._players.map(player => player.id);
     let playerToRight: UnoPlayer;
     let playerToLeft: UnoPlayer;
-    if (this.state.currentMovePlayer){
+    if (this._players.length > 0) { // Changed logic to account for destructuring
+      if (!this.state.currentMovePlayer) {
+        [this.state.currentMovePlayer] = this._players;
+      }
       const currentIndex = this._players.indexOf(this.state.currentMovePlayer);
-      playerToRight = this._players[(currentIndex + 1) % this._players.length];
-      playerToLeft = this._players[(currentIndex - 1 + this._players.length) % this._players.length];  
+    
+      const playerToRightIndex = (currentIndex + 1) % this._players.length;
+      const playerToLeftIndex = (currentIndex - 1 + this._players.length) % this._players.length;
+    
+      playerToRight = this._players[playerToRightIndex];
+      playerToLeft = this._players[playerToLeftIndex];
+    } else {
+      this.state.currentMovePlayer = null;
     }
-    else{
-      this.state.currentMovePlayer = this._players[0];
-      playerToRight = this._players[1];
-      playerToLeft = this._players[-1];
-    }
-    if (!this.state.currentMovePlayer)
-      this.state.currentMovePlayer = this._players[0];
-
+    
     if (this.state.mostRecentMove){
       if (this.state.mostRecentMove.cardPlaced.value === 'Wild')
         this.wildCardPlaced();
@@ -102,13 +112,34 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
       }
     }
     this.state.numberOfMovesSoFar++;
-  
   }
+
   public _join(player: UnoPlayer): void {
-
+    if (this._players.includes(player)) {
+      throw new Error(PLAYER_ALREADY_IN_GAME_MESSAGE);
+    }
+    if (this._players.length >= MAX_PLAYERS) {
+      throw new Error(GAME_FULL_MESSAGE);
+    }
+    this._updatePlayerPositions();
+    this.state.status = 'WAITING_TO_START';
   }
+
+  private _updatePlayerPositions(): void {
+    this._players.forEach((player, index, arr) => {
+      player.playerToLeft = arr[(index + arr.length - 1) % arr.length];
+      player.playerToRight = arr[(index + 1) % arr.length];
+    });
+  }
+
   public _leave(player: UnoPlayer): void {
-    
-  }
+    const playerIndex = this._players.findIndex(p => p.id === player.id);
 
+    if (playerIndex === -1) {
+      throw new Error(PLAYER_NOT_IN_GAME_MESSAGE);
+    }
+    this._players.splice(playerIndex, 1);
+
+    this._updatePlayerPositions();
+  }
 }
