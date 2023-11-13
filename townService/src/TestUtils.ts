@@ -21,9 +21,11 @@ import {
   PlayerLocation,
   ServerToClientEvents,
   SocketData,
+  TownEmitter,
   ViewingArea,
+  UnoPlayer as UnoPlayerModule,
 } from './types/CoveyTownSocket';
-
+import UnoPlayer from './lib/UnoPlayer';
 /**
  * Create a new conversation area using some random defaults
  * @param params
@@ -183,6 +185,16 @@ export function mockPlayer(townID: string): MockedPlayer {
   return new MockedPlayer(socket, socketToRoomMock, userName, townID, undefined);
 }
 
+/**
+ * Utility function to create a new player object for testing, not connected to any town
+ *
+ */
+export function createPlayerForTesting(): Player {
+  return new Player(`username${nanoid()}`, mock<TownEmitter>());
+}
+export function createUnoPlayerForTesting(): UnoPlayer {
+  return new UnoPlayer(createPlayerForTesting());
+}
 /**
  * Assert that two arrays contain the same members (by strict === equality), allowing them to appear in different orders
  * @param actual

@@ -1,4 +1,5 @@
 import Player from '../../lib/Player';
+
 export type TownJoinResponse = {
   /** Unique ID that represents this player * */
   userID: string;
@@ -27,9 +28,13 @@ export interface GameInstance<T extends GameState> {
     result?: GameResult;
 }
 
+export interface GameMove<MoveType> {
+  playerID: PlayerID;
+  gameID: GameInstanceID;
+  move: MoveType;
+}
+
 export interface UnoMove {
-    playerID: PlayerID;
-    gameID: GameInstanceID;
     cardPlaced: Card;
 }
 
@@ -42,12 +47,9 @@ export type GameStatus = 'IN_PROGRESS' | 'WAITING_TO_START' | 'OVER';
 
 export type Interactable = ConversationArea | ViewingArea | UnoArea;
 
-
 export interface GameState{
   status: GameStatus;
 }
-
-export type UnoGameDirection = 'Clockwise' | 'Counter_Clockwise'
 
 export interface UnoGameState extends GameState{
   winner?: PlayerID;
@@ -58,14 +60,14 @@ export interface UnoGameState extends GameState{
   currentCardValue: Value;
   direction: UnoGameDirection;
 }
-  export interface UnoMove  {
-    cardPlaced: Card;
-}
+
+export type UnoGameDirection = 'Clockwise' | 'Counter_Clockwise'
 
 export type TownSettingsUpdate = {
   friendlyName?: string;
   isPubliclyListed?: boolean;
 }
+
 export type Color = 'Red' | 'Green' | 'Blue' | 'Yellow' | 'Wild' | 'None';
 
 export type Value =
@@ -90,8 +92,6 @@ export type Value =
 export interface Card {
   color: Color;
   value: Value;
-  canPlayOn(topCard: Card): boolean;
-  play(): void;
 }
 
 export type DeckOfCards = Card[];
@@ -107,7 +107,7 @@ export interface UnoPlayer extends Player{
   location: PlayerLocation;
   playerToLeft?: Player | null;
   playerToRight?: Player | null;
-  cardsInHand?: Card[] | null;
+  cardsInHand?: Card[];
   readyUp?: boolean | null;
 };
 
@@ -129,10 +129,9 @@ export type ChatMessage = {
   body: string;
   dateCreated: Date;
 };
-export interface GameArea {
-  id: string;
-  topic?: string;
-  occupantsByID: string[];
+export interface GameArea<T extends GameState> extends Interactable {
+  game: GameInstance<T> | undefined;
+  history: GameResult[];
 }
 export interface ConversationArea {
   id: string;
