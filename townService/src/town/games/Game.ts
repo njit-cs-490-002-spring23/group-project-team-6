@@ -101,7 +101,6 @@ export default abstract class Game<StateType extends GameState, MoveType> {
    */
   public join(player: UnoPlayer): void {
     this._join(player);
-    this._players.push(player);
   }
 
   /**
