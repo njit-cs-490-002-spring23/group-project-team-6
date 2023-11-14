@@ -19,14 +19,6 @@ export type TownJoinResponse = {
 
 export type GameInstanceID = string;
 
-export type PlayerID = string;
-
-export interface Player {
-  id: PlayerID;
-  userName: string;
-  location: PlayerLocation;
-};
-
 export interface GameInstance<T extends GameState> {
     state: T;
     id: GameInstanceID;
@@ -60,7 +52,7 @@ export interface GameState{
 export interface UnoGameState extends GameState{
   winner?: PlayerID;
   mostRecentMove?: UnoMove;
-  currentMovePlayer?: UnoPlayer;
+  currentMovePlayer?: Player;
   currentColor: Color;
   numberOfMovesSoFar: number;
   currentCardValue: Value;
@@ -106,6 +98,16 @@ export type DeckOfCards = Card[];
 
 
 export type Direction = 'front' | 'back' | 'left' | 'right';
+
+export interface UnoPlayer extends Player{
+  id: string;
+  userName: string;
+  location: PlayerLocation;
+  playerToLeft?: Player | null;
+  playerToRight?: Player | null;
+  cardsInHand?: Card[];
+  readyUp?: boolean | null;
+};
 
 export type XY = { x: number, y: number };
 
