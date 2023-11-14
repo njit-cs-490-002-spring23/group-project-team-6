@@ -5,11 +5,9 @@ import {
   GameMove,
   GameResult,
   GameState,
-  DeckOfCards,
   Color
 } from '../../types/CoveyTownSocket';
 import UnoPlayer from '../../lib/UnoPlayer';
-import Player from '../../lib/Player';
 
 /**
  * This class is the base class for all games. It is responsible for managing the
@@ -42,13 +40,6 @@ export default abstract class Game<StateType extends GameState, MoveType> {
     this._state = newState;
   }
 
-  /**
-   * Marks the player as ready or not ready.
-   * This method should be implemented by subclasses.
-   * @param player The player that is marked as ready or not ready.
-
-   */
-  public abstract playerReadyUp(player: UnoPlayer): void;
   /**
    * Checks if all of the players have pressed the ready up button.
    * This method should be implemented by subclasses.
