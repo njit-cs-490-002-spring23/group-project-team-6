@@ -1,11 +1,17 @@
 import Player from './Player';
 import { PlayerLocation, TownEmitter, Card } from '../types/CoveyTownSocket';
+
 export default class UnoPlayer {
   public readonly _player: Player;
+
   public playerToLeft?: UnoPlayer | null;
+
   public playerToRight?: UnoPlayer | null;
+
   public cardsInHand: Card[];
+
   public readyUp: boolean | null;
+
   constructor(player: Player) {
     this._player = player;
     this.playerToLeft = null;
@@ -13,7 +19,12 @@ export default class UnoPlayer {
     this.cardsInHand = [];
     this.readyUp = false;
   }
+
+  public playerReadyUp(): void {
+    this.readyUp = !this.readyUp;
+  }
   // Getter methods for Player properties
+
   get userName(): string {
     return this._player.userName;
   }
