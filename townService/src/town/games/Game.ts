@@ -43,13 +43,6 @@ export default abstract class Game<StateType extends GameState, MoveType> {
   }
 
   /**
-   * Marks the player as ready or not ready.
-   * This method should be implemented by subclasses.
-   * @param player The player that is marked as ready or not ready.
-
-   */
-  public abstract playerReadyUp(player: UnoPlayer): void;
-  /**
    * Checks if all of the players have pressed the ready up button.
    * This method should be implemented by subclasses.
    */
@@ -110,7 +103,6 @@ export default abstract class Game<StateType extends GameState, MoveType> {
    */
   public join(player: UnoPlayer): void {
     this._join(player);
-    this._players.push(player);
   }
 
   /**
