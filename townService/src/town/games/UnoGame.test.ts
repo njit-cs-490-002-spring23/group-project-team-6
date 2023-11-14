@@ -3,7 +3,10 @@ import {
   PLAYER_NOT_IN_GAME_MESSAGE,
   PLAYER_ALREADY_IN_GAME_MESSAGE,
   GAME_FULL_MESSAGE,
+  NOT_YOUR_TURN_MESSAGE,
+  INVALID_MOVE_MESSAGE,
 } from '../../lib/InvalidParametersError';
+import { GameMove, UnoMove } from '../../types/CoveyTownSocket';
 import UnoGame from './UnoGame';
 
 describe('UnoGame', () => {
@@ -12,10 +15,6 @@ describe('UnoGame', () => {
     game = new UnoGame();
   });
   describe('[T1.1] Ready Up Player by Player', () => {
-    it('should throw an error if the player is not in the game', () => {
-        const player = createUnoPlayerForTesting();
-        expect(() => player.playerReadyUp()).toThrowError(PLAYER_NOT_IN_GAME_MESSAGE);
-      });
     it('should mark all players who are ready as ready', () => {
         const player1 = createUnoPlayerForTesting();
         const player2 = createUnoPlayerForTesting();
@@ -120,7 +119,6 @@ describe('UnoGame', () => {
   describe('[T1.3] _leave', () => {
     it('should throw an error if the player is not in the game', () => {
       expect(() => game.leave(createUnoPlayerForTesting())).toThrowError(PLAYER_NOT_IN_GAME_MESSAGE);
-      // TODO weaker test suite only does one of these - above or below
       const player = createUnoPlayerForTesting();
       game.join(player);
       expect(() => game.leave(createUnoPlayerForTesting())).toThrowError(PLAYER_NOT_IN_GAME_MESSAGE);
@@ -166,32 +164,101 @@ describe('UnoGame', () => {
           expect(game.state.winner).toBeUndefined();
         });
       });
-    });
-  });
-  describe('[T1.4] checkIfPlayersReadyandDealCards', () => {
-    it('should deal 7 cards to each player only if they are all ready', () => {
-      const player1 = createUnoPlayerForTesting();
-      const player2 = createUnoPlayerForTesting();
-      const player3 = createUnoPlayerForTesting();
-      const player4 = createUnoPlayerForTesting();
-      game.join(player1);
-      game.join(player2);
-      game.join(player3);
-      game.join(player4);
-      player1.playerReadyUp();
-      player2.playerReadyUp();
-      player3.playerReadyUp();
-      console.log(game.checkIfPlayersReadyandDealCards());
-      expect(player1.cardsInHand.length).toEqual(0);
-      expect(player2.cardsInHand.length).toEqual(0);
-      expect(player3.cardsInHand.length).toEqual(0);
-      expect(player4.cardsInHand.length).toEqual(0);
-      player4.playerReadyUp();
-      console.log(game.checkIfPlayersReadyandDealCards());
-      expect(player1.cardsInHand.length).toEqual(7);
-      expect(player2.cardsInHand.length).toEqual(7);
-      expect(player3.cardsInHand.length).toEqual(7);
-      expect(player4.cardsInHand.length).toEqual(7);
+      describe('[T1.4] checkIfPlayersReadyandDealCards', () => {
+        it('should deal 7 cards to each player only if they are all ready', () => {
+          const player1 = createUnoPlayerForTesting();
+          const player2 = createUnoPlayerForTesting();
+          const player3 = createUnoPlayerForTesting();
+          const player4 = createUnoPlayerForTesting();
+          game.join(player1);
+          game.join(player2);
+          game.join(player3);
+          game.join(player4);
+          player1.playerReadyUp();
+          player2.playerReadyUp();
+          player3.playerReadyUp();
+          expect(player1.cardsInHand.length).toEqual(0);
+          expect(player2.cardsInHand.length).toEqual(0);
+          expect(player3.cardsInHand.length).toEqual(0);
+          expect(player4.cardsInHand.length).toEqual(0);
+          player4.playerReadyUp();
+          expect(player1.cardsInHand.length).toEqual(7);
+          expect(player2.cardsInHand.length).toEqual(7);
+          expect(player3.cardsInHand.length).toEqual(7);
+          expect(player4.cardsInHand.length).toEqual(7);
+        });
+      });
+      describe('[T1.4] applyMove(move: UnoMove) - Regular/Invalid Cards', () => {
+        it('should validate the cards and throw an error if an invalid card is placed', () => {
+          const player1 = createUnoPlayerForTesting();
+          const player2 = createUnoPlayerForTesting();
+          const player3 = createUnoPlayerForTesting();
+          const player4 = createUnoPlayerForTesting();
+          game.join(player1);
+          game.join(player2);
+          game.join(player3);
+          game.join(player4);
+          player1.playerReadyUp();
+          player2.playerReadyUp();
+          player3.playerReadyUp();
+          player4.playerReadyUp();
+          expect(game.state.currentMovePlayer).toBeUndefined();
+          const player1Move1UnoMove: UnoMove = {
+            cardPlaced: {
+              color: 'Red', 
+              value: '0',
+            },
+          };
+          const player1Move1: GameMove<UnoMove> = {
+            playerID: player1.id,
+            gameID: game.id,
+            move: player1Move1UnoMove
+          }
+          const player2Move1InvalidUnoMove: UnoMove = {
+            cardPlaced: {
+              color: 'Green', 
+              value: '5',
+            },
+          };
+          const player2InvalidMove1: GameMove<UnoMove> = {
+            playerID: player2.id,
+            gameID: game.id,
+            move: player2Move1InvalidUnoMove
+          }
+          const player2Move1UnoMove: UnoMove = {
+            cardPlaced: {
+              color: 'Red', 
+              value: '5',
+            },
+          };
+          const player2Move1: GameMove<UnoMove> = {
+            playerID: player2.id,
+            gameID: game.id,
+            move: player2Move1UnoMove
+          }
+          expect(() => game.applyMove(player2InvalidMove1)).toThrowError(NOT_YOUR_TURN_MESSAGE);
+          game.applyMove(player1Move1);
+          expect(game.state.currentCardValue).toEqual('0');
+          expect(game.state.currentColor).toEqual('Red');
+          expect(game.state.currentMovePlayer.id).toBe(player2.id);
+          expect(game.state.direction).toEqual('Counter_Clockwise');
+          expect(game.state.mostRecentMove).toBe(player1Move1UnoMove);
+          expect(game.state.numberOfMovesSoFar).toEqual(1);
+          expect(game.state.status).toEqual('IN_PROGRESS');
+          expect(game.state.winner).toBeUndefined();
+          expect(() => game.applyMove(player2InvalidMove1)).toThrowError(INVALID_MOVE_MESSAGE);
+          game.applyMove(player2Move1);
+          expect(game.state.currentCardValue).toEqual('5');
+          expect(game.state.currentColor).toEqual('Red');
+          expect(game.state.currentMovePlayer.id).toBe(player3.id);
+          expect(game.state.direction).toEqual('Counter_Clockwise');
+          expect(game.state.mostRecentMove).toBe(player2Move1UnoMove);
+          expect(game.state.numberOfMovesSoFar).toEqual(2);
+          expect(game.state.status).toEqual('IN_PROGRESS');
+          expect(game.state.winner).toBeUndefined();
+        });
+      });
     });
   });
 });
+
