@@ -53,7 +53,7 @@ export default abstract class Game<StateType extends GameState, MoveType> {
    * Checks if all of the players have pressed the ready up button.
    * This method should be implemented by subclasses.
    */
-  public abstract checkIfPlayersReady(): boolean;
+  public abstract checkIfPlayersReadyandDealCards(): boolean;
 
   /**
    * Changes the color of the state of the game.

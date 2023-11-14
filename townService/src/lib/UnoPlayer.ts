@@ -4,8 +4,8 @@ export default class UnoPlayer {
   public readonly _player: Player;
   public playerToLeft?: UnoPlayer | null;
   public playerToRight?: UnoPlayer | null;
-  public cardsInHand?: Card[];
-  public readyUp?: boolean | null;
+  public cardsInHand: Card[];
+  public readyUp: boolean | null;
   constructor(player: Player) {
     this._player = player;
     this.playerToLeft = null;
