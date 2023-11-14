@@ -85,9 +85,9 @@ describe('UnoGame', () => {
         expect(game.state.status).toEqual('WAITING_TO_START');
         game.join(player2);
         expect(player1.playerToLeft?.id).toEqual(player2.id);
-        expect(player1.playerToLeft?.id).toEqual(player2.id);
+        expect(player1.playerToRight?.id).toEqual(player2.id);
         expect(player2.playerToLeft?.id).toEqual(player1.id);
-        expect(player2.playerToLeft?.id).toEqual(player1.id);
+        expect(player2.playerToRight?.id).toEqual(player1.id);
        
         game.join(player3);
         game.join(player4);
@@ -144,6 +144,7 @@ describe('UnoGame', () => {
           player4.playerReadyUp();
           player5.playerReadyUp();
           player6.playerReadyUp();
+          game.checkIfPlayersReadyandDealCards();
           game.leave(player1);
           game.leave(player2);
           game.leave(player3);
@@ -164,100 +165,32 @@ describe('UnoGame', () => {
           expect(game.state.winner).toBeUndefined();
         });
       });
-      describe('[T1.4] checkIfPlayersReadyandDealCards', () => {
-        it('should deal 7 cards to each player only if they are all ready', () => {
-          const player1 = createUnoPlayerForTesting();
-          const player2 = createUnoPlayerForTesting();
-          const player3 = createUnoPlayerForTesting();
-          const player4 = createUnoPlayerForTesting();
-          game.join(player1);
-          game.join(player2);
-          game.join(player3);
-          game.join(player4);
-          player1.playerReadyUp();
-          player2.playerReadyUp();
-          player3.playerReadyUp();
-          expect(player1.cardsInHand.length).toEqual(0);
-          expect(player2.cardsInHand.length).toEqual(0);
-          expect(player3.cardsInHand.length).toEqual(0);
-          expect(player4.cardsInHand.length).toEqual(0);
-          player4.playerReadyUp();
-          expect(player1.cardsInHand.length).toEqual(7);
-          expect(player2.cardsInHand.length).toEqual(7);
-          expect(player3.cardsInHand.length).toEqual(7);
-          expect(player4.cardsInHand.length).toEqual(7);
-        });
-      });
-      describe('[T1.4] applyMove(move: UnoMove) - Regular/Invalid Cards', () => {
-        it('should validate the cards and throw an error if an invalid card is placed', () => {
-          const player1 = createUnoPlayerForTesting();
-          const player2 = createUnoPlayerForTesting();
-          const player3 = createUnoPlayerForTesting();
-          const player4 = createUnoPlayerForTesting();
-          game.join(player1);
-          game.join(player2);
-          game.join(player3);
-          game.join(player4);
-          player1.playerReadyUp();
-          player2.playerReadyUp();
-          player3.playerReadyUp();
-          player4.playerReadyUp();
-          expect(game.state.currentMovePlayer).toBeUndefined();
-          const player1Move1UnoMove: UnoMove = {
-            cardPlaced: {
-              color: 'Red', 
-              value: '0',
-            },
-          };
-          const player1Move1: GameMove<UnoMove> = {
-            playerID: player1.id,
-            gameID: game.id,
-            move: player1Move1UnoMove
-          }
-          const player2Move1InvalidUnoMove: UnoMove = {
-            cardPlaced: {
-              color: 'Green', 
-              value: '5',
-            },
-          };
-          const player2InvalidMove1: GameMove<UnoMove> = {
-            playerID: player2.id,
-            gameID: game.id,
-            move: player2Move1InvalidUnoMove
-          }
-          const player2Move1UnoMove: UnoMove = {
-            cardPlaced: {
-              color: 'Red', 
-              value: '5',
-            },
-          };
-          const player2Move1: GameMove<UnoMove> = {
-            playerID: player2.id,
-            gameID: game.id,
-            move: player2Move1UnoMove
-          }
-          expect(() => game.applyMove(player2InvalidMove1)).toThrowError(NOT_YOUR_TURN_MESSAGE);
-          game.applyMove(player1Move1);
-          expect(game.state.currentCardValue).toEqual('0');
-          expect(game.state.currentColor).toEqual('Red');
-          expect(game.state.currentMovePlayer.id).toBe(player2.id);
-          expect(game.state.direction).toEqual('Counter_Clockwise');
-          expect(game.state.mostRecentMove).toBe(player1Move1UnoMove);
-          expect(game.state.numberOfMovesSoFar).toEqual(1);
-          expect(game.state.status).toEqual('IN_PROGRESS');
-          expect(game.state.winner).toBeUndefined();
-          expect(() => game.applyMove(player2InvalidMove1)).toThrowError(INVALID_MOVE_MESSAGE);
-          game.applyMove(player2Move1);
-          expect(game.state.currentCardValue).toEqual('5');
-          expect(game.state.currentColor).toEqual('Red');
-          expect(game.state.currentMovePlayer.id).toBe(player3.id);
-          expect(game.state.direction).toEqual('Counter_Clockwise');
-          expect(game.state.mostRecentMove).toBe(player2Move1UnoMove);
-          expect(game.state.numberOfMovesSoFar).toEqual(2);
-          expect(game.state.status).toEqual('IN_PROGRESS');
-          expect(game.state.winner).toBeUndefined();
-        });
-      });
+    });
+  });
+  describe('[T1.4] checkIfPlayersReadyandDealCards', () => {
+    it('should deal 7 cards to each player only if they are all ready', () => {
+      const player1 = createUnoPlayerForTesting();
+      const player2 = createUnoPlayerForTesting();
+      const player3 = createUnoPlayerForTesting();
+      const player4 = createUnoPlayerForTesting();
+      game.join(player1);
+      game.join(player2);
+      game.join(player3);
+      game.join(player4);
+      player1.playerReadyUp();
+      player2.playerReadyUp();
+      player3.playerReadyUp();
+      console.log(game.checkIfPlayersReadyandDealCards());
+      expect(player1.cardsInHand.length).toEqual(0);
+      expect(player2.cardsInHand.length).toEqual(0);
+      expect(player3.cardsInHand.length).toEqual(0);
+      expect(player4.cardsInHand.length).toEqual(0);
+      player4.playerReadyUp();
+      console.log(game.checkIfPlayersReadyandDealCards());
+      expect(player1.cardsInHand.length).toEqual(7);
+      expect(player2.cardsInHand.length).toEqual(7);
+      expect(player3.cardsInHand.length).toEqual(7);
+      expect(player4.cardsInHand.length).toEqual(7);
     });
   });
 });

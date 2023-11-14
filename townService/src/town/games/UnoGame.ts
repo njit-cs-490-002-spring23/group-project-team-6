@@ -20,6 +20,7 @@ import {
 import UnoPlayer from '../../lib/UnoPlayer';
 
 const MAX_PLAYERS = 6;
+const MIN_PLAYERS = 2;
 
 /**
  * A Uno is a Game that implements the rules of Uno.
@@ -97,10 +98,11 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
   // public methods to be used in game
 
   public checkIfPlayersReadyandDealCards(): boolean {
-    for (let i = 0; i < this._players.length; i++){
-      if(!this._players[i].readyUp)
+    for (let j = 0; j < this._players.length; j++){
+      if(!this._players[j].readyUp)
         return false;
-    } 
+      }
+    }
     this.state.status = 'IN_PROGRESS';
     this.createDeck();
     this._shuffleDeck();
@@ -219,6 +221,7 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     if (this._players.length >= MAX_PLAYERS) {
       throw new Error(GAME_FULL_MESSAGE);
     }
+    this._players.push(player);
     this._updatePlayerPositions();
     this.state.status = 'WAITING_TO_START';
   }
@@ -232,6 +235,18 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     this._players.splice(playerIndex, 1);
 
     this._updatePlayerPositions();
+    
+    if (this.state.status === 'IN_PROGRESS' && this._players.length < MIN_PLAYERS) {
+      this.state.status = 'OVER';
+  
+      if (this._players.length === 1) {
+        this.state.winner = this._players[0].id;
+      }
+      else {
+        this.state.status = 'WAITING_TO_START';
+        this.state.winner = undefined;
+      }
+    }
   }
 
   // private methods used by class
