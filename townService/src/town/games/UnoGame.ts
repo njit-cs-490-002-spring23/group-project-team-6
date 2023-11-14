@@ -101,7 +101,6 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     for (let j = 0; j < this._players.length; j++){
       if(!this._players[j].readyUp)
         return false;
-      }
     }
     this.state.status = 'IN_PROGRESS';
     this.createDeck();

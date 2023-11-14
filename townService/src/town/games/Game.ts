@@ -5,9 +5,11 @@ import {
   GameMove,
   GameResult,
   GameState,
+  DeckOfCards,
   Color
 } from '../../types/CoveyTownSocket';
 import UnoPlayer from '../../lib/UnoPlayer';
+import Player from '../../lib/Player';
 
 /**
  * This class is the base class for all games. It is responsible for managing the
@@ -101,6 +103,7 @@ export default abstract class Game<StateType extends GameState, MoveType> {
    */
   public join(player: UnoPlayer): void {
     this._join(player);
+    this._players.push(player);
   }
 
   /**
