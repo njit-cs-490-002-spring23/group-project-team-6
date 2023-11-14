@@ -1,14 +1,15 @@
 import { nanoid } from 'nanoid';
-import Player from '../../lib/Player';
 import {
   GameInstance,
   GameInstanceID,
-  UnoMove,
-  UnoPlayer,
+  GameMove,
   GameResult,
   GameState,
   DeckOfCards,
+  Color
 } from '../../types/CoveyTownSocket';
+import UnoPlayer from '../../lib/UnoPlayer';
+import Player from '../../lib/Player';
 
 /**
  * This class is the base class for all games. It is responsible for managing the
@@ -19,9 +20,9 @@ export default abstract class Game<StateType extends GameState, MoveType> {
 
   public readonly id: GameInstanceID;
 
-  protected _result?: GameResult;
+  public _players: UnoPlayer[] = [];
 
-  protected _players: UnoPlayer[] = [];
+  protected _result?: GameResult;
 
   /**
    * Creates a new Game instance.
@@ -40,24 +41,50 @@ export default abstract class Game<StateType extends GameState, MoveType> {
   protected set state(newState: StateType) {
     this._state = newState;
   }
+
   /**
-   * Adds a card to a players hand in game.
+   * Marks the player as ready or not ready.
+   * This method should be implemented by subclasses.
+   * @param player The player that is marked as ready or not ready.
+
+   */
+  public abstract playerReadyUp(player: UnoPlayer): void;
+  /**
+   * Checks if all of the players have pressed the ready up button.
+   * This method should be implemented by subclasses.
+   */
+  public abstract checkIfPlayersReadyandDealCards(): boolean;
+
+  /**
+   * Changes the color of the state of the game.
+   * Used by other methods in UnoGame.ts as well as in frontend for wild cards.
+   * This method should be implemented by subclasses.
+   * @param color The color that the state of the game will be changed to.
+   */
+  public abstract updateColor(color: Color): void;
+  /**
+   * Adds a card from the deck to a players hand in game.
    * This method should be implemented by subclasses.
    * @param player The player to draw the card.
    */
-  public abstract drawFromDeck(player: UnoPlayer) : void
+  public abstract drawFromDeck(player: UnoPlayer): void;
   /**
    * Create a new deck for the game.
    * This method should be implemented by subclasses.
    */
-  public abstract createDeck() : DeckOfCards;
+  public abstract createDeck(): void;
+  /**
+   * Deal 7 cards to each player in the game.
+   * This method should be implemented by subclasses.
+   */
+  public abstract dealCards(): void;
   /**
    * Apply a move to the game.
    * This method should be implemented by subclasses.
    * @param move A move to apply to the game.
    * @throws InvalidParametersError if the move is invalid.
    */
-  public abstract applyMove(move: UnoMove): void;
+  public abstract applyMove(move: GameMove<MoveType>): void;
 
   /**
    * Attempt to join a game.
