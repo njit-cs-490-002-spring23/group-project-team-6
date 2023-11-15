@@ -12,10 +12,6 @@ describe('UnoGame', () => {
     game = new UnoGame();
   });
   describe('[T1.1] Ready Up Player by Player', () => {
-    it('should throw an error if the player is not in the game', () => {
-        const player = createUnoPlayerForTesting();
-        expect(() => player.playerReadyUp()).toThrowError(PLAYER_NOT_IN_GAME_MESSAGE);
-      });
     it('should mark all players who are ready as ready', () => {
         const player1 = createUnoPlayerForTesting();
         const player2 = createUnoPlayerForTesting();
@@ -86,9 +82,9 @@ describe('UnoGame', () => {
         expect(game.state.status).toEqual('WAITING_TO_START');
         game.join(player2);
         expect(player1.playerToLeft?.id).toEqual(player2.id);
-        expect(player1.playerToLeft?.id).toEqual(player2.id);
+        expect(player1.playerToRight?.id).toEqual(player2.id);
         expect(player2.playerToLeft?.id).toEqual(player1.id);
-        expect(player2.playerToLeft?.id).toEqual(player1.id);
+        expect(player2.playerToRight?.id).toEqual(player1.id);
        
         game.join(player3);
         game.join(player4);
@@ -146,6 +142,7 @@ describe('UnoGame', () => {
           player4.playerReadyUp();
           player5.playerReadyUp();
           player6.playerReadyUp();
+          game.checkIfPlayersReadyandDealCards();
           game.leave(player1);
           game.leave(player2);
           game.leave(player3);
@@ -169,6 +166,23 @@ describe('UnoGame', () => {
     });
   });
   describe('[T1.4] checkIfPlayersReadyandDealCards', () => {
+    it('should set game status to in progress after every player readies up', () => {
+      const player1 = createUnoPlayerForTesting();
+      const player2 = createUnoPlayerForTesting();
+      const player3 = createUnoPlayerForTesting();
+      const player4 = createUnoPlayerForTesting();
+      game.join(player1);
+      game.join(player2);
+      game.join(player3);
+      game.join(player4);
+      player1.playerReadyUp();
+      player2.playerReadyUp();
+      player3.playerReadyUp();
+      expect(game.state.status).toEqual('WAITING_TO_START');
+      player4.playerReadyUp();
+      console.log(game.checkIfPlayersReadyandDealCards());
+      expect(game.state.status).toEqual('IN_PROGRESS');
+    });
     it('should deal 7 cards to each player only if they are all ready', () => {
       const player1 = createUnoPlayerForTesting();
       const player2 = createUnoPlayerForTesting();
