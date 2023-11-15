@@ -55,11 +55,11 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     this.state.mostRecentMove = mostRecentMove;
   }
 
-  get currentMovePlayer(): UnoPlayer | null {
+  get currentMovePlayer(): UnoPlayer {
     return this.state.currentMovePlayer;
   }
 
-  set currentMovePlayer(currentMovePlayer: UnoPlayer | null) {
+  set currentMovePlayer(currentMovePlayer: UnoPlayer) {
     this.state.currentMovePlayer = currentMovePlayer;
   }
 
