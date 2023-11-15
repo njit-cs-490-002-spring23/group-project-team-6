@@ -186,16 +186,17 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
    * @throws InvalidParametersError if the move is invalid (with specific message noted above)
    */
   public applyMove(move: GameMove<UnoMove>): void {
+    const [first] = this._players;
     if (!this.state.currentMovePlayer)
-      this.state.currentMovePlayer = this._players;
-    else if (move.playerID !== this.state.currentMovePlayer.id){
+      this.state.currentMovePlayer = first;
+    if (move.playerID !== this.state.currentMovePlayer.id){
        throw new InvalidParametersError(NOT_YOUR_TURN_MESSAGE);
     }
     if (move.move.cardPlaced.value === 'Wild')
       this._wildCardPlaced(move.move);
     else if (move.move.cardPlaced.value === 'Wild Draw Four')
       this._wildDrawfourCardPlaced(move.move);
-    else if (this.state.currentColor === move.move.cardPlaced.color || this.state.currentCardValue === move.move.cardPlaced.value){
+    else if (this.state.currentColor === move.move.cardPlaced.color || this.state.currentColor === 'None' || this.state.currentCardValue === 'None'){
       this.updateColor(move.move.cardPlaced.color);
       if (move.move.cardPlaced.value === 'Draw Two')
         this._drawtwoCardPlaced(move.move);
@@ -258,7 +259,7 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
   }
 
   private _checkIfWinningMove() : void {
-    if (this.state.currentMovePlayer.cardsInHand.length() === 0){
+    if (this.state.currentMovePlayer.cardsInHand.length === 0){
       this.state = {
         ...this.state,
         status: 'OVER',
@@ -268,11 +269,11 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
   }
 
   private _getNextPlayer(): UnoPlayer {
-    return this.state.direction === 'Clockwise' ? this.state.currentMovePlayer.playerToRight : this.state.currentMovePlayer.playerToLeft;
+    return this.state.direction === 'Counter_Clockwise' ? this.state.currentMovePlayer.playerToRight : this.state.currentMovePlayer.playerToLeft;
   }
 
   private _applyMoveUpdateGameState(move: UnoMove){
-    this.state.currentMovePlayer.cardsInHand = this.state.currentMovePlayer.cardsInHand.filter((card: Card) => card === move.cardPlaced);
+    // this.state.currentMovePlayer.cardsInHand = this.state.currentMovePlayer.cardsInHand.filter((card: Card) => card.color !== move.cardPlaced.color && card.value !== move.cardPlaced.value);
     this.state.mostRecentMove = move;
     this.state.currentCardValue = move.cardPlaced.value;
     this._checkIfWinningMove();
@@ -280,8 +281,8 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
   }
 
   private _wildCardPlaced(move: UnoMove) : void {
+    this.state.currentColor = move.cardPlaced.color;
     this._applyMoveUpdateGameState(move);
-    this.state.currentMovePlayer = this._getNextPlayer();
   }
 
   private _wildDrawfourCardPlaced(move: UnoMove) : void {
