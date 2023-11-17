@@ -94,7 +94,7 @@ export interface Card {
   value: Value;
 }
 
-export type DeckOfCards = Card[];
+export type DeckOfCards = Card[] | null;
 
 
 
