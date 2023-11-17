@@ -9,8 +9,6 @@ import {
   Color
 } from '../../types/CoveyTownSocket';
 import UnoPlayer from '../../lib/UnoPlayer';
-import Player from '../../lib/Player';
-
 /**
  * This class is the base class for all games. It is responsible for managing the
  * state of the game. @see GameArea
