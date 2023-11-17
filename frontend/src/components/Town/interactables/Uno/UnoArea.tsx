@@ -2,9 +2,9 @@ import { Button, chakra, Container, useToast, Box, useStyleConfig } from '@chakr
 import React, { useEffect, useState } from 'react';
 import UnoAreaController from "../../../../classes/UnoAreaController"
 import { PlayerGameObjects } from '../../../../classes/PlayerController';
-import { Card, UnoPlayer,UnoGameState, UnoMove, } from '../../../../types/CoveyTownSocket';
+import { Card, Player,UnoGameState, UnoMove, } from '../../../../types/CoveyTownSocket';
 
-import { UnoCard } from '../../../../classes/UnoAreaController';
+import { CARD } from '../../../../classes/UnoAreaController';
 
 
 export type UnoAreaProp = {

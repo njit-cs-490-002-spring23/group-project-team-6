@@ -39,7 +39,7 @@ export default class UnoAreaController extends GameAreaController<UnoGameState, 
    * Returns the hand of the specified player.
    */
   get getHand(): DeckOfCards | undefined {
-    return this._playerHands[];
+    return this._playerHands[this.oc];
   }
 
   /**

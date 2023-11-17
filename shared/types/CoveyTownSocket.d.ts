@@ -52,6 +52,7 @@ export interface GameResult {
 export type GameStatus = 'IN_PROGRESS' | 'WAITING_TO_START' | 'OVER';
 
 export type Interactable = ConversationArea | ViewingArea | UnoArea;
+export type InteractableID = string;
 
 export interface GameState{
   status: GameStatus;
