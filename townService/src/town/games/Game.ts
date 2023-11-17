@@ -5,9 +5,9 @@ import {
   GameMove,
   GameResult,
   GameState,
-  DeckOfCards,
   Color
 } from '../../types/CoveyTownSocket';
+import Player from '../../lib/Player';
 import UnoPlayer from '../../lib/UnoPlayer';
 /**
  * This class is the base class for all games. It is responsible for managing the
