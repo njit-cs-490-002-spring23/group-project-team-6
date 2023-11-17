@@ -7,7 +7,8 @@ import {
   Card,
   DeckOfCards,
   Color,
-  Value
+  Value,
+  UnoMove
 } from '../types/CoveyTownSocket';
 
 import PlayerController from './PlayerController';
@@ -38,13 +39,13 @@ export default class UnoAreaController extends GameAreaController<UnoGameState, 
    * Returns the hand of the specified player.
    */
   get getHand(): DeckOfCards | undefined {
-    return this._playerHands[this._model.game?.players.find()];
+    return this._playerHands[];
   }
 
   /**
    * Returns the current card in play.
    */
-  getCurrentCard(): UnoCard | undefined {
+  get getCurrentCard(): Card | undefined {
     return this._currentCard;
   }
 
@@ -53,21 +54,21 @@ export default class UnoAreaController extends GameAreaController<UnoGameState, 
    * @param player PlayerController of the player making the action
    * @param action The action the player is taking
    */
-  handlePlayerAction(player: PlayerController, action: UnoPlayerAction) {
+  get handlePlayerAction(player: UnoPlayer, action: UnoMove) {
     // Implement the logic to handle player actions (like playing a card, drawing a card, etc.)
   }
 
   /**
    * Updates the game state based on the current state and the action taken by a player.
    */
-  updateGameState() {
+  get updateGameState() {
     // Implement the logic to update the game state
   }
 
   /**
    * Determines if the game has ended and who the winner is.
    */
-  checkForGameEnd() {
+  get checkForGameEnd() {
     // Implement the logic to determine game end and winner
   }
 
@@ -75,7 +76,7 @@ export default class UnoAreaController extends GameAreaController<UnoGameState, 
    * Sends a request to the server to play a card or draw a card
    * @param action The action the player is taking
    */
-  public async makeMove(action: UnoPlayerAction) {
+  public async makeMove(action: UnoMove) {
     // Logic to send a move to the server
   }
 }

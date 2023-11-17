@@ -1,4 +1,4 @@
-import Player from '../../lib/Player';
+import Player from '../../townService/src/lib/Player';
 
 export type TownJoinResponse = {
   /** Unique ID that represents this player * */
