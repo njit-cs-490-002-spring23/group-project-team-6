@@ -34,7 +34,7 @@ export default abstract class GameArea<
     return {
       id: this.id,
       game: this._game?.toModel(),
-      history: this._history,
+      history: this._history, 
       occupants: this.occupantsByID,
       type: this.getType(),
     };

@@ -23,7 +23,6 @@ import {
   SocketData,
   TownEmitter,
   ViewingArea,
-  UnoPlayer as UnoPlayerModule,
 } from './types/CoveyTownSocket';
 import UnoPlayer from './lib/UnoPlayer';
 /**
