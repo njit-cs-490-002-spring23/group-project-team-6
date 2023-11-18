@@ -1,12 +1,14 @@
 import _ from 'lodash';
-import { GameArea,  
-    GameInstanceID,
-    GameResult,
-    GameState,
+import {
+  GameArea,
+  GameInstanceID,
+  GameResult,
+  GameState,
+  InteractableID,
 } from '../types/CoveyTownSocket';
 import PlayerController from './PlayerController';
 import TownController from './TownController';
-import Interactable from '../components/Town/Interactable';
+import InteractableAreaController, { BaseInteractableEventMap } from './InteractableAreaController';
 
 export type GameEventTypes = BaseInteractableEventMap & {
   gameStart: () => void;

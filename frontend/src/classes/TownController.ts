@@ -12,6 +12,7 @@ import useTownController from '../hooks/useTownController';
 import {
   ChatMessage,
   CoveyTownSocket,
+  PlayerID,
   PlayerLocation,
   TownSettingsUpdate,
   ViewingArea as ViewingAreaModel,
@@ -269,6 +270,12 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
       this._paused = true;
       this.emit('pause');
     }
+  }
+  
+  public getPlayer(id: PlayerID) {
+    const ret = this._playersInternal.find(eachPlayer => eachPlayer.id === id);
+    assert(ret);
+    return ret;
   }
 
   public unPause(): void {

@@ -166,3 +166,47 @@ export interface ClientToServerEvents {
   interactableUpdate: (update: Interactable) => void;
 }
 
+export type InteractableCommand =  ViewingAreaUpdateCommand | JoinGameCommand | GameMoveCommand<TicTacToeMove> | LeaveGameCommand;
+export interface ViewingAreaUpdateCommand  {
+  type: 'ViewingAreaUpdate';
+  update: ViewingArea;
+}
+export interface JoinGameCommand {
+  type: 'JoinGame';
+}
+export interface LeaveGameCommand {
+  type: 'LeaveGame';
+  gameID: GameInstanceID;
+}
+export interface GameMoveCommand<MoveType> {
+  type: 'GameMove';
+  gameID: GameInstanceID;
+  move: MoveType;
+}
+export type InteractableCommandReturnType<CommandType extends InteractableCommand> = 
+  CommandType extends JoinGameCommand ? { gameID: string}:
+  CommandType extends ViewingAreaUpdateCommand ? undefined :
+  CommandType extends GameMoveCommand<TicTacToeMove> ? undefined :
+  CommandType extends LeaveGameCommand ? undefined :
+  never;
+
+export type InteractableCommandResponse<MessageType> = {
+  commandID: CommandID;
+  interactableID: InteractableID;
+  error?: string;
+  payload?: InteractableCommandResponseMap[MessageType];
+}
+interface InteractableCommandBase {
+  /**
+   * A unique ID for this command. This ID is used to match a command against a response
+   */
+  commandID: CommandID;
+  /**
+   * The ID of the interactable that this command is being sent to
+   */
+  interactableID: InteractableID;
+  /**
+   * The type of this command
+   */
+  type: string;
+}
