@@ -5,9 +5,7 @@ import {
   GameMove,
   GameResult,
   GameState,
-  Color
 } from '../../types/CoveyTownSocket';
-import Player from '../../lib/Player';
 import UnoPlayer from '../../lib/UnoPlayer';
 /**
  * This class is the base class for all games. It is responsible for managing the
@@ -39,6 +37,13 @@ export default abstract class Game<StateType extends GameState, MoveType> {
   protected set state(newState: StateType) {
     this._state = newState;
   }
+  /**
+   * Mark player as ready to play.
+   * This method should be implemented by subclasses.
+   * @param player The player to join the game.
+   */
+
+  public abstract playerReadyUp(player: UnoPlayer): void;
 
   /**
    * Apply a move to the game.

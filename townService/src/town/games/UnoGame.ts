@@ -290,7 +290,7 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
   }
 
   private _applyMoveUpdateGameState(move: UnoMove){
-    this.state.currentMovePlayer.cardsInHand = this.state.currentMovePlayer.cardsInHand.filter((card: Card) => card.color === move.cardPlaced.color && card.value === move.cardPlaced.value);
+    this.state.currentMovePlayer.cardsInHand = this.state.currentMovePlayer.cardsInHand.filter((card: Card) => card === move.cardPlaced);
     this.state.mostRecentMove = move;
     this.state.currentCardValue = move.cardPlaced.value;
     this._checkIfWinningMove();

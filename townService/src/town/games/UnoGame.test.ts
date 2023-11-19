@@ -571,6 +571,9 @@ describe('UnoGame', () => {
   });
   describe('[T1.10] applyMove(move: GameMove<UnoMove>) - Wild Draw four Cards', () => {
     it('should add 4 cards to the next player, skip them and make the turn the next player\'s', () => {
+  });
+  describe('[T1.10] applyMove(move: GameMove<UnoMove>) - Wild Draw four Cards', () => {
+    it('should add 4 cards to the next player, skip them and make the turn the next player\'s', () => {
       const player1 = createUnoPlayerForTesting();
       const player2 = createUnoPlayerForTesting();
       const player3 = createUnoPlayerForTesting();
@@ -682,4 +685,5 @@ describe('UnoGame', () => {
     });
   });
 });
+
 
