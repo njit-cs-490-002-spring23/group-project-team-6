@@ -105,9 +105,9 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
         allPlayersReady = false;
         break;
       }
-      if (allPlayersReady){
-        this._checkIfPlayersReadyandDealCards();
-      }
+    }
+    if (allPlayersReady){
+      this._shuffleAndDealCards();
     }
   }
 
@@ -229,11 +229,7 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
 
   // private methods used by class
 
-  private _checkIfPlayersReadyandDealCards(): boolean {
-    for (let j = 0; j < this._players.length; j++){
-      if(!this._players[j].readyUp || this._players.length < 2)
-        throw new Error('Not Enough Players In The Game');
-    }
+  private _shuffleAndDealCards(): boolean {
     this.state.status = 'IN_PROGRESS';
     this._createDeck();
     this._shuffleDeck();
@@ -290,7 +286,7 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
   }
 
   private _applyMoveUpdateGameState(move: UnoMove){
-    this.state.currentMovePlayer.cardsInHand = this.state.currentMovePlayer.cardsInHand.filter((card: Card) => card === move.cardPlaced);
+    this.state.currentMovePlayer.cardsInHand = this.state.currentMovePlayer.cardsInHand.filter((card: Card) => card !== move.cardPlaced);
     this.state.mostRecentMove = move;
     this.state.currentCardValue = move.cardPlaced.value;
     this._checkIfWinningMove();

@@ -7,6 +7,7 @@ import {
   GameState,
 } from '../../types/CoveyTownSocket';
 import UnoPlayer from '../../lib/UnoPlayer';
+
 /**
  * This class is the base class for all games. It is responsible for managing the
  * state of the game. @see GameArea

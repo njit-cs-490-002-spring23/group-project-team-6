@@ -237,8 +237,8 @@ describe('UnoGame', () => {
       expect(game.state.direction).toEqual('Counter_Clockwise');
       expect(game.state.mostRecentMove).toBe(player1Move1UnoMove);
       expect(game.state.numberOfMovesSoFar).toEqual(1);
-      expect(game.state.winner).toBeUndefined();
       expect(game.state.status).toEqual('IN_PROGRESS');
+      expect(game.state.winner).toBeUndefined();
       expect(() => game.applyMove(player2InvalidMove1)).toThrowError(INVALID_MOVE_MESSAGE);
       game.applyMove(player2Move1);
       expect(game.state.currentCardValue).toEqual('5');
@@ -326,7 +326,7 @@ describe('UnoGame', () => {
       game.playerReadyUp(player2);
       game.playerReadyUp(player3);
       game.playerReadyUp(player4);
-      expect(game.state.currentMovePlayer).toBeUndefined();
+      expect(game.state.currentMovePlayer.id).toBe(player1.id);
       const player1Move1UnoMove: UnoMove = {
         cardPlaced: {
           color: 'Red', 
@@ -400,7 +400,7 @@ describe('UnoGame', () => {
       game.playerReadyUp(player2);
       game.playerReadyUp(player3);
       game.playerReadyUp(player4);
-      expect(game.state.currentMovePlayer).toBeUndefined();
+      expect(game.state.currentMovePlayer.id).toBe(player1.id);
       const player1Move1UnoMove: UnoMove = {
         cardPlaced: {
           color: 'Red', 
@@ -485,7 +485,7 @@ describe('UnoGame', () => {
       game.playerReadyUp(player2);
       game.playerReadyUp(player3);
       game.playerReadyUp(player4);
-      expect(game.state.currentMovePlayer).toBeUndefined();
+      expect(game.state.currentMovePlayer.id).toBe(player1.id);
       const player1Move1UnoMove: UnoMove = {
         cardPlaced: {
           color: 'Red', 
@@ -586,7 +586,7 @@ describe('UnoGame', () => {
       game.playerReadyUp(player2);
       game.playerReadyUp(player3);
       game.playerReadyUp(player4);
-      expect(game.state.currentMovePlayer).toBeUndefined();
+      expect(game.state.currentMovePlayer.id).toBe(player1.id);
       const player1Move1UnoMove: UnoMove = {
         cardPlaced: {
           color: 'Red', 
@@ -682,8 +682,7 @@ describe('UnoGame', () => {
       expect(game.state.numberOfMovesSoFar).toEqual(7);
       expect(game.state.winner).toBeUndefined();
       expect(game.state.status).toEqual('IN_PROGRESS');
+      });
     });
   });
 });
-
-
