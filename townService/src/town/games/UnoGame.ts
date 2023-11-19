@@ -97,43 +97,21 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
 
   // public methods to be used in game
 
-  public checkIfPlayersReadyandDealCards(): boolean {
-    for (let j = 0; j < this._players.length; j++){
-      if(!this._players[j].readyUp)
-        return false;
+  public playerReadyUp(player: UnoPlayer): void {
+    player.readyUp = !player.readyUp;
+    let allPlayersReady = true;
+    for (let j = 0; j < this._players.length; j++) {
+      if (!this._players[j].readyUp){
+        allPlayersReady = false;
+        break;
+      }
+      if (allPlayersReady){
+        this._checkIfPlayersReadyandDealCards();
+      }
     }
-    this.state.status = 'IN_PROGRESS';
-    this.createDeck();
-    this._shuffleDeck();
-    this.dealCards();
-    return true;
   }
 
-  public createDeck(): void {
-    const colors: Color[] = ['Red', 'Green', 'Blue', 'Yellow'];
-    const values: Value[] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'Skip', 'Reverse', 'Draw Two'];
-    const wildCard: Card = {
-      color: 'None',
-      value: 'Wild'
-    }
-    const wildDrawFourCard: Card = {
-      color: 'None',
-      value: 'Wild Draw Four'
-    }
-    colors.forEach(color => {
-      values.forEach(value => {
-        for (let i = 0; i < 4; i++) {
-          this.deckOfCards.push({ color, value });
-        }
-      });
-    });
-    this.deckOfCards.push(wildCard);
-    this.deckOfCards.push(wildCard);
-    this.deckOfCards.push(wildDrawFourCard);
-    this.deckOfCards.push(wildDrawFourCard);
-  }
-
-  public dealCards(): void {
+  public _dealCards(): void {
     this._shuffleDeck();
     for (let i = 0; i < 7; i++){
       for (let j = 0; j < this._players.length; j++){
@@ -251,6 +229,45 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
 
   // private methods used by class
 
+  private _checkIfPlayersReadyandDealCards(): boolean {
+    for (let j = 0; j < this._players.length; j++){
+      if(!this._players[j].readyUp || this._players.length < 2)
+        throw new Error('Not Enough Players In The Game');
+    }
+    this.state.status = 'IN_PROGRESS';
+    this._createDeck();
+    this._shuffleDeck();
+    this._dealCards();
+    const [first] = this._players;
+    this.state.currentMovePlayer = first;
+    return true;
+  }
+
+  private _createDeck(): void {
+    const colors: Color[] = ['Red', 'Green', 'Blue', 'Yellow'];
+    const values: Value[] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'Skip', 'Reverse', 'Draw Two'];
+    const wildCard: Card = {
+      color: 'None',
+      value: 'Wild'
+    }
+    const wildDrawFourCard: Card = {
+      color: 'None',
+      value: 'Wild Draw Four'
+    }
+    colors.forEach(color => {
+      values.forEach(value => {
+        for (let i = 0; i < 4; i++) {
+          this.deckOfCards.push({ color, value });
+        }
+      });
+    });
+    this.deckOfCards.push(wildCard);
+    this.deckOfCards.push(wildCard);
+    this.deckOfCards.push(wildDrawFourCard);
+    this.deckOfCards.push(wildDrawFourCard);
+  }
+
+
   private _updatePlayerPositions(): void {
     this._players.forEach((player, index, arr) => {
       player.playerToLeft = arr[(index + arr.length - 1) % arr.length];
@@ -273,7 +290,7 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
   }
 
   private _applyMoveUpdateGameState(move: UnoMove){
-    // this.state.currentMovePlayer.cardsInHand = this.state.currentMovePlayer.cardsInHand.filter((card: Card) => card.color !== move.cardPlaced.color && card.value !== move.cardPlaced.value);
+    this.state.currentMovePlayer.cardsInHand = this.state.currentMovePlayer.cardsInHand.filter((card: Card) => card.color === move.cardPlaced.color && card.value === move.cardPlaced.value);
     this.state.mostRecentMove = move;
     this.state.currentCardValue = move.cardPlaced.value;
     this._checkIfWinningMove();

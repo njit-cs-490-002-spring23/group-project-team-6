@@ -41,35 +41,6 @@ export default abstract class Game<StateType extends GameState, MoveType> {
   }
 
   /**
-   * Checks if all of the players have pressed the ready up button.
-   * This method should be implemented by subclasses.
-   */
-  public abstract checkIfPlayersReadyandDealCards(): boolean;
-
-  /**
-   * Changes the color of the state of the game.
-   * Used by other methods in UnoGame.ts as well as in frontend for wild cards.
-   * This method should be implemented by subclasses.
-   * @param color The color that the state of the game will be changed to.
-   */
-  public abstract updateColor(color: Color): void;
-  /**
-   * Adds a card from the deck to a players hand in game.
-   * This method should be implemented by subclasses.
-   * @param player The player to draw the card.
-   */
-  public abstract drawFromDeck(player: UnoPlayer): void;
-  /**
-   * Create a new deck for the game.
-   * This method should be implemented by subclasses.
-   */
-  public abstract createDeck(): void;
-  /**
-   * Deal 7 cards to each player in the game.
-   * This method should be implemented by subclasses.
-   */
-  public abstract dealCards(): void;
-  /**
    * Apply a move to the game.
    * This method should be implemented by subclasses.
    * @param move A move to apply to the game.

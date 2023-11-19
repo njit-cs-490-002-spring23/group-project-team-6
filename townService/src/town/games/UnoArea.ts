@@ -3,7 +3,7 @@ import InvalidParametersError, {
     GAME_NOT_IN_PROGRESS_MESSAGE,
     INVALID_COMMAND_MESSAGE,
   } from '../../lib/InvalidParametersError';
-  import Player from '../../lib/Player';
+import Player from '../../lib/Player';
 import UnoPlayer from '../../lib/UnoPlayer';
   import {
     GameInstance,
@@ -128,9 +128,6 @@ export default class UnoArea extends GameArea<UnoGame> {
       if (!game) {
         throw new InvalidParametersError(GAME_NOT_IN_PROGRESS_MESSAGE);
       }
-      if (this._game?.id !== command.gameID) {
-        throw new InvalidParametersError(GAME_ID_MISSMATCH_MESSAGE);
-      }
       game.updateColor(command.color);
       this._stateUpdated(game.toModel());
       return undefined as InteractableCommandReturnType<CommandType>;
@@ -140,14 +137,24 @@ export default class UnoArea extends GameArea<UnoGame> {
       if (!game) {
         throw new InvalidParametersError(GAME_NOT_IN_PROGRESS_MESSAGE);
       }
-      if (this._game?.id !== command.gameID) {
-        throw new InvalidParametersError(GAME_ID_MISSMATCH_MESSAGE);
+      const currentUnoPlayer: UnoPlayer | undefined = game._players.find(unoPlayer => unoPlayer.id === player.id);
+      if (currentUnoPlayer === undefined){
+        throw new InvalidParametersError(INVALID_COMMAND_MESSAGE);
+      }
+      game.playerReadyUp(currentUnoPlayer);
+      this._stateUpdated(game.toModel());
+      return undefined as InteractableCommandReturnType<CommandType>;
+    }
+    if (command.type === 'DrawFromDeck'){
+      const game = this._game;
+      if (!game) {
+        throw new InvalidParametersError(GAME_NOT_IN_PROGRESS_MESSAGE);
       }
       const currentUnoPlayer: UnoPlayer | undefined = game._players.find(unoPlayer => unoPlayer.id === player.id);
       if (currentUnoPlayer === undefined){
         throw new InvalidParametersError(INVALID_COMMAND_MESSAGE);
       }
-      currentUnoPlayer.playerReadyUp();
+      game.drawFromDeck(currentUnoPlayer);
       this._stateUpdated(game.toModel());
       return undefined as InteractableCommandReturnType<CommandType>;
     }

@@ -143,6 +143,51 @@ export interface ViewingArea {
   elapsedTimeSec: number;
 }
 
+export type InteractableCommand =  
+  ViewingAreaUpdateCommand | 
+  ReadyUpCommand | 
+  ChangeColorCommand | 
+  JoinGameCommand | 
+  GameMoveCommand<UnoMove> | 
+  LeaveGameCommand |
+  DrawFromDeck;
+
+export type InteractableCommandReturnType<CommandType extends InteractableCommand> = 
+  CommandType extends JoinGameCommand ? { gameID: string}:
+  CommandType extends ViewingAreaUpdateCommand ? undefined :
+  CommandType extends DrawFromDeck ? undefined :
+  CommandType extends ChangeColorCommand ? undefined :
+  CommandType extends ReadyUpCommand ? undefined :
+  CommandType extends GameMoveCommand<TicTacToeMove> ? undefined :
+  CommandType extends LeaveGameCommand ? undefined :
+  never;
+
+  export interface JoinGameCommand {
+    type: 'JoinGame';
+  }
+  export interface ViewingAreaUpdateCommand  {
+    type: 'ViewingAreaUpdate';
+    update: ViewingArea;
+  }
+  export interface ChangeColorCommand  {
+    type: 'ChangeColor';
+    color: Color;
+  }
+  export interface ReadyUpCommand  {
+    type: 'ReadyUp';
+  }
+  export interface LeaveGameCommand {
+    type: 'LeaveGame';
+    gameID: GameInstanceID;
+  }
+  export interface GameMoveCommand<MoveType> {
+    type: 'GameMove';
+    gameID: GameInstanceID;
+    move: MoveType;
+  }
+  export interface DrawFromDeck {
+    type: 'DrawFromDeck';
+  }
 export interface ServerToClientEvents {
   playerMoved: (movedPlayer: Player) => void;
   playerDisconnect: (disconnectedPlayer: Player) => void;

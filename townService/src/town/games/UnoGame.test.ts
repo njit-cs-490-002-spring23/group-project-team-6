@@ -34,12 +34,12 @@ describe('UnoGame', () => {
         expect(player5.readyUp).toBe(false);
         game.join(player6);
         expect(player6.readyUp).toBe(false);
-        player1.playerReadyUp();
-        player2.playerReadyUp();
-        player3.playerReadyUp();
-        player4.playerReadyUp();
-        player5.playerReadyUp();
-        player6.playerReadyUp();
+        game.playerReadyUp(player1);
+        game.playerReadyUp(player2);
+        game.playerReadyUp(player3);
+        game.playerReadyUp(player4);
+        game.playerReadyUp(player5);
+        game.playerReadyUp(player6);
         expect(player1.readyUp).toBe(true);
         expect(player2.readyUp).toBe(true);
         expect(player3.readyUp).toBe(true);
@@ -130,13 +130,12 @@ describe('UnoGame', () => {
           game.join(player4);
           game.join(player5);
           game.join(player6);
-          player1.playerReadyUp();
-          player2.playerReadyUp();
-          player3.playerReadyUp();
-          player4.playerReadyUp();
-          player5.playerReadyUp();
-          player6.playerReadyUp();
-          game.checkIfPlayersReadyandDealCards();
+          game.playerReadyUp(player1)
+          game.playerReadyUp(player2)
+          game.playerReadyUp(player3)
+          game.playerReadyUp(player4)
+          game.playerReadyUp(player5)
+          game.playerReadyUp(player6)
           game.leave(player1);
           game.leave(player2);
           game.leave(player3);
@@ -169,16 +168,14 @@ describe('UnoGame', () => {
       game.join(player2);
       game.join(player3);
       game.join(player4);
-      player1.playerReadyUp();
-      player2.playerReadyUp();
-      player3.playerReadyUp();
-      expect(game.checkIfPlayersReadyandDealCards()).toEqual(false);
+      game.playerReadyUp(player1)
+      game.playerReadyUp(player2)
+      game.playerReadyUp(player3)
       expect(player1.cardsInHand.length).toEqual(0);
       expect(player2.cardsInHand.length).toEqual(0);
       expect(player3.cardsInHand.length).toEqual(0);
       expect(player4.cardsInHand.length).toEqual(0);
-      player4.playerReadyUp();
-      expect(game.checkIfPlayersReadyandDealCards()).toEqual(true);
+      game.playerReadyUp(player4)
       expect(player1.cardsInHand.length).toEqual(7);
       expect(player2.cardsInHand.length).toEqual(7);
       expect(player3.cardsInHand.length).toEqual(7);
@@ -195,11 +192,10 @@ describe('UnoGame', () => {
       game.join(player2);
       game.join(player3);
       game.join(player4);
-      player1.playerReadyUp();
-      player2.playerReadyUp();
-      player3.playerReadyUp();
-      player4.playerReadyUp();
-      expect(game.checkIfPlayersReadyandDealCards()).toEqual(true);
+      game.playerReadyUp(player1);
+      game.playerReadyUp(player2);
+      game.playerReadyUp(player3);
+      game.playerReadyUp(player4);
       const player1Move1UnoMove: UnoMove = {
         cardPlaced: {
           color: 'Red', 
@@ -265,11 +261,10 @@ describe('UnoGame', () => {
       game.join(player2);
       game.join(player3);
       game.join(player4);
-      player1.playerReadyUp();
-      player2.playerReadyUp();
-      player3.playerReadyUp();
-      player4.playerReadyUp();
-      expect(game.checkIfPlayersReadyandDealCards()).toEqual(true);
+      game.playerReadyUp(player1);
+      game.playerReadyUp(player2);
+      game.playerReadyUp(player3);
+      game.playerReadyUp(player4);
       const player1Move1UnoMove: UnoMove = {
         cardPlaced: {
           color: 'Red', 
@@ -327,12 +322,11 @@ describe('UnoGame', () => {
       game.join(player2);
       game.join(player3);
       game.join(player4);
-      player1.playerReadyUp();
-      player2.playerReadyUp();
-      player3.playerReadyUp();
-      player4.playerReadyUp();
+      game.playerReadyUp(player1);
+      game.playerReadyUp(player2);
+      game.playerReadyUp(player3);
+      game.playerReadyUp(player4);
       expect(game.state.currentMovePlayer).toBeUndefined();
-      expect(game.checkIfPlayersReadyandDealCards()).toEqual(true);
       const player1Move1UnoMove: UnoMove = {
         cardPlaced: {
           color: 'Red', 
@@ -402,12 +396,11 @@ describe('UnoGame', () => {
       game.join(player2);
       game.join(player3);
       game.join(player4);
-      player1.playerReadyUp();
-      player2.playerReadyUp();
-      player3.playerReadyUp();
-      player4.playerReadyUp();
+      game.playerReadyUp(player1);
+      game.playerReadyUp(player2);
+      game.playerReadyUp(player3);
+      game.playerReadyUp(player4);
       expect(game.state.currentMovePlayer).toBeUndefined();
-      expect(game.checkIfPlayersReadyandDealCards()).toEqual(true);
       const player1Move1UnoMove: UnoMove = {
         cardPlaced: {
           color: 'Red', 
@@ -488,12 +481,11 @@ describe('UnoGame', () => {
       game.join(player2);
       game.join(player3);
       game.join(player4);
-      player1.playerReadyUp();
-      player2.playerReadyUp();
-      player3.playerReadyUp();
-      player4.playerReadyUp();
+      game.playerReadyUp(player1);
+      game.playerReadyUp(player2);
+      game.playerReadyUp(player3);
+      game.playerReadyUp(player4);
       expect(game.state.currentMovePlayer).toBeUndefined();
-      expect(game.checkIfPlayersReadyandDealCards()).toEqual(true);
       const player1Move1UnoMove: UnoMove = {
         cardPlaced: {
           color: 'Red', 
@@ -587,12 +579,11 @@ describe('UnoGame', () => {
       game.join(player2);
       game.join(player3);
       game.join(player4);
-      player1.playerReadyUp();
-      player2.playerReadyUp();
-      player3.playerReadyUp();
-      player4.playerReadyUp();
+      game.playerReadyUp(player1);
+      game.playerReadyUp(player2);
+      game.playerReadyUp(player3);
+      game.playerReadyUp(player4);
       expect(game.state.currentMovePlayer).toBeUndefined();
-      expect(game.checkIfPlayersReadyandDealCards()).toEqual(true);
       const player1Move1UnoMove: UnoMove = {
         cardPlaced: {
           color: 'Red', 
