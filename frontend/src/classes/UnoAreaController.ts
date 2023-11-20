@@ -13,6 +13,7 @@ import {
 
 import PlayerController from './PlayerController';
 import GameAreaController, { GameEventTypes } from './GameAreaController';
+import { Card } from '@material-ui/core';
 
 export const PLAYER_NOT_IN_UNO_GAME_ERROR = 'Player is not in Uno game';
 export const NO_UNO_GAME_IN_PROGRESS_ERROR = 'No Uno game in progress';
@@ -57,6 +58,7 @@ export default class UnoAreaController extends GameAreaController<UnoGameState, 
    * Handles a player action in the Uno game.
    */
   public handlePlayerAction(player: Player, action: UnoMove): void {
+    let ArraySpecialCards : Value[] = ["Draw Two","Reverse","Skip","Wild Draw Four",'Wild']
     if (!this.isActive()) {
       throw new Error(NO_UNO_GAME_IN_PROGRESS_ERROR);
     }
@@ -64,30 +66,33 @@ export default class UnoAreaController extends GameAreaController<UnoGameState, 
     if (!this._playerHands.has(player)) {
       throw new Error(PLAYER_NOT_IN_UNO_GAME_ERROR);
     }
-  
-    switch (action.type) {
-      case 'PLAY_CARD':
-        this.playCard(player, action.card);
-        break;
-      case 'DRAW_CARD':
-        this.drawCard(player);
-        break;
-      // Add additional case statements for other action types if needed
-      default:
-        throw new Error(`Unknown action type: ${action.type}`);
-    }
+    const CardPlaced: Card =  action.cardPlaced;
 
-    private playCard(player: Player, card: Card): void {
+    if(!ArraySpecialCards.includes(CardPlaced.value) && this.isValidPlay(CardPlaced))
+    {
+      this.playCard(player,CardPlaced);
+      this._deck.push(CardPlaced);
+    }
+    if(ArraySpecialCards.includes(CardPlaced.value) && this.isValidPlay(CardPlaced))
+    {
+      this.applyCardEffects(CardPlaced);
+    }
+    
+  }
+  private playCard(player: Player, card: Card): void {
   const playerHand = this._playerHands.get(player);
   if (!playerHand) {
     throw new Error("Player hand not found");
   }
 
+  
+
+  // NICE TO HAVE
   // Check if the card is in the player's hand
-  const cardIndex = playerHand.findIndex(c => c.color === card.color && c.value === card.value);
-  if (cardIndex === -1) {
-    throw new Error("Card not in player's hand");
-  }
+  // const cardIndex = playerHand.findIndex(c => c.color === card.color && c.value === card.value);
+  // if (cardIndex === -1) {
+  //   throw new Error("Card not in player's hand");
+  // }
 
   // Check if the card can be played on the current card
   if (!this.isValidPlay(card)) {
@@ -127,13 +132,24 @@ private drawCard(player: Player): void {
 }
 
 private isValidPlay(card: Card): boolean {
-  // Logic to check if the card can be played
-  // This should include checking against the current card in play, and special rules for wild cards
+  return this._deck[this._deck.length-1].color == card.color || this._deck[this._deck.length-1].value == card.value;
 }
 
 private applyCardEffects(card: Card): void {
-  // Logic to apply effects of the card (skip, reverse, draw two, etc.)
-  // This may include modifying the game state, such as changing turn order or forcing other players to draw cards
+  switch(card.value){
+    case 'Draw Two':
+      break;
+    case 'Skip':
+      break;
+    case 'Wild Draw Four':
+      break;
+    case 'Reverse':
+      break;
+    case 'Wild':
+      break;
+    default:
+      throw new Error(`Unknown action type: ${card.value}`);
+  }
 }
 
 private reshuffleDeck(): void {
