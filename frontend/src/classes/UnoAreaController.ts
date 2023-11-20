@@ -67,32 +67,30 @@ export default class UnoAreaController extends GameAreaController<UnoGameState, 
       throw new Error(PLAYER_NOT_IN_UNO_GAME_ERROR);
     }
     const CardPlaced: Card =  action.cardPlaced;
-
-    if(!ArraySpecialCards.includes(CardPlaced.value) && this.isValidPlay(CardPlaced))
+    if(!this.isValidPlay(CardPlaced))
+    {
+      this
+    }
+    if(!ArraySpecialCards.includes(CardPlaced.value))
     {
       this.playCard(player,CardPlaced);
       this._deck.push(CardPlaced);
     }
-    if(ArraySpecialCards.includes(CardPlaced.value) && this.isValidPlay(CardPlaced))
+    if(ArraySpecialCards.includes(CardPlaced.value))
     {
       this.applyCardEffects(CardPlaced);
     }
     
   }
+  
   private playCard(player: Player, card: Card): void {
-  const playerHand = this._playerHands.get(player);
+  const playerHand = this._playerHands.get(player)?.filter((aCard) =>{ return aCard != card});
   if (!playerHand) {
     throw new Error("Player hand not found");
   }
 
   
 
-  // NICE TO HAVE
-  // Check if the card is in the player's hand
-  // const cardIndex = playerHand.findIndex(c => c.color === card.color && c.value === card.value);
-  // if (cardIndex === -1) {
-  //   throw new Error("Card not in player's hand");
-  // }
 
   // Check if the card can be played on the current card
   if (!this.isValidPlay(card)) {
