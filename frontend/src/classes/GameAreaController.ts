@@ -120,4 +120,6 @@ export default abstract class GameAreaController<
   toInteractableAreaModel(): GameArea<State> {
     return this._model;
   }
+
+  setIn
 }

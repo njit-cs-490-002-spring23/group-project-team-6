@@ -91,6 +91,9 @@ export default abstract class Game<StateType extends GameState, MoveType> {
    * @param player The player to leave the game.
    * @throws InvalidParametersError if the player can not leave the game
    */
+
+  protected abstract _getNextPlayer(): UnoPlayer;
+  
   protected abstract _leave(player: UnoPlayer): void;
 
   /**

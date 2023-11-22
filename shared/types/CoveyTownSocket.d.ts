@@ -58,6 +58,8 @@ export interface GameState{
   status: GameStatus;
 }
 
+
+
 export interface UnoGameState extends GameState{
   winner?: PlayerID;
   mostRecentMove?: UnoMove;

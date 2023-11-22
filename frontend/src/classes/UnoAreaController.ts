@@ -3,21 +3,23 @@ import {
   GameArea,
   GameStatus,
   UnoGameState,
-  Player,
   Card,
   DeckOfCards,
   Color,
   Value,
   UnoMove
 } from '../types/CoveyTownSocket';
-
+import Game from '../../../townService/src/town/games/Game'
 import PlayerController from './PlayerController';
 import GameAreaController, { GameEventTypes } from './GameAreaController';
-import { Card } from '@material-ui/core';
+import TownController from './TownController';
+import UnoPlayer from '../../../townService/src/lib/UnoPlayer';
+
 
 export const PLAYER_NOT_IN_UNO_GAME_ERROR = 'Player is not in Uno game';
 export const NO_UNO_GAME_IN_PROGRESS_ERROR = 'No Uno game in progress';
-
+export const INVALID_CARD_PLAYED_ERROR = "Card can not be played";
+export const NO_GAME_IN_PROGRESS_ERROR = 'No game in progress';
 export const noCard: Card = {
   color: "None",
   value: "None"
@@ -33,87 +35,109 @@ export type UnoEvents = GameEventTypes & {
 
 export default class UnoAreaController extends GameAreaController<UnoGameState, UnoEvents> {
   private _deck: DeckOfCards = []; 
-  private _currentCard: Card | undefined; 
-  private _playerHands: Map<Player, DeckOfCards> = new Map(); 
+  private _currentCard: DeckOfCards = [];
+  // private _playerHands: Map<String, DeckOfCards> = new Map(); 
+  private _playerHands: DeckOfCards = [];
+  private playID = this._model.game?.state.currentMovePlayer.id;
+  private _playersHands:Map<PlayerController,DeckOfCards> = new Map();
+
 
   /**
    * Returns the hand of the player.
    */
-  public getHand(player: Player): DeckOfCards | undefined {
-    return this._playerHands.get(player);
+public getHand(): DeckOfCards | undefined {
+    return this._playerHands;
   }
 
   /**
    * Returns the current card in play.
    */
-  public getCurrentCard(): Card | undefined {
-    return this._currentCard;
+public getCurrentCard(): Card | undefined {
+    return this._currentCard[this._currentCard.length -1];
   }
 
-  public isActive(): boolean {
+public isActive(): boolean {
     return this._model.game?.state.status === 'IN_PROGRESS';
   }
-
-  /**
-   * Handles a player action in the Uno game.
-   */
-  public handlePlayerAction(player: Player, action: UnoMove): void {
-    let ArraySpecialCards : Value[] = ["Draw Two","Reverse","Skip","Wild Draw Four",'Wild']
-    if (!this.isActive()) {
-      throw new Error(NO_UNO_GAME_IN_PROGRESS_ERROR);
-    }
-  
-    if (!this._playerHands.has(player)) {
-      throw new Error(PLAYER_NOT_IN_UNO_GAME_ERROR);
-    }
-    const CardPlaced: Card =  action.cardPlaced;
-    if(!this.isValidPlay(CardPlaced))
-    {
-      this
-    }
-    if(!ArraySpecialCards.includes(CardPlaced.value))
-    {
-      this.playCard(player,CardPlaced);
-      this._deck.push(CardPlaced);
-    }
-    if(ArraySpecialCards.includes(CardPlaced.value))
-    {
-      this.applyCardEffects(CardPlaced);
-    }
-    
+get status(): GameStatus {
+  const status = this._model.game?.state.status;
+  if(!status){
+    return 'WAITING_TO_START';
   }
-  
-  private playCard(player: Player, card: Card): void {
-  const playerHand = this._playerHands.get(player)?.filter((aCard) =>{ return aCard != card});
-  if (!playerHand) {
-    throw new Error("Player hand not found");
-  }
-
-  
-
-
-  // Check if the card can be played on the current card
-  if (!this.isValidPlay(card)) {
-    throw new Error("Invalid card play");
-  }
-
-  // Apply the card's effects (skip, reverse, draw two, etc.)
-  this.applyCardEffects(card);
-
-  // Remove the card from the player's hand
-  playerHand.splice(cardIndex, 1);
-
-  // Update the current card
-  this._currentCard = card;
+  return status;
+}
+get EveryOneReady(): boolean {
+  return this._model.game?.state.status === "IN_PROGRESS";
 }
 
-private drawCard(player: Player): void {
+get numberOfCardsInPlayerHand() : number | undefined {
+  return this._playerHands.get(this.playID)?.length;
+}
+
+get numberOfCardInDeck() : number {
+  return this._deck.length;
+}
+
+// public handlePlayerAction(player: PlayerController, action: UnoMove): void {
+//     let ArraySpecialCards : Value[] = ["Draw Two","Reverse","Skip","Wild Draw Four",'Wild']
+//     if (!this.isActive()) {
+//       throw new Error(NO_UNO_GAME_IN_PROGRESS_ERROR);
+//     }
+  
+//     if (!this._playerHands.has(this.playID)) {
+//       throw new Error(PLAYER_NOT_IN_UNO_GAME_ERROR);
+//     }
+//     const CardPlaced: Card =  action.cardPlaced;
+//     if(!this.isValidPlay(CardPlaced))
+//     {
+//       throw new Error(INVALID_CARD_PLAYED_ERROR);
+//     }
+//     if(!ArraySpecialCards.includes(CardPlaced.value))
+//     {
+//       this.playCard(player,CardPlaced);
+
+//     } else {
+//       this.applyCardEffects(CardPlaced);
+     
+//     }
+//     const playerHand : DeckOfCards = this._playerHands.get(this.playID) || [];
+//     if (playerHand.length === 0) {
+//       this.endGame(player);
+//     }
+  
+//     // Move to the next player
+//     this.nextPlayer();
+//   }
+
+  public whoseTurn() : PlayerController | undefined {
+    return this.occupants.find(eachOccupant => eachOccupant.id === this._model.game?.state.currentMovePlayer.id);
+  }
+  public _getNextPlayer(): PlayerController {
+
+  }
+private playCard(player: PlayerController, card: Card): void {
+  const playerHand = this._playerHands.get(this.playID);
+  if (!playerHand) {
+    throw new Error("Player hand not found in the game");
+  }
+
+  const updatedHand = playerHand.filter(aCard => aCard !== card);
+  if (playerHand.length === updatedHand.length) {
+    throw new Error("Card not found in player's hand");
+  }
+
+  this._playerHands.set(this.playID, updatedHand);
+  this._currentCard.push(card);
+}
+
+
+private drawCard(player: PlayerController): void {
   // Draw a card from the deck
   const drawnCard = this._deck.pop();
   if (!drawnCard) {
     // If the deck is empty, reshuffle the discard pile into the deck
     this.reshuffleDeck();
-    drawnCard = this._deck.pop();
+    // drawnCard = this._deck.pop();
   }
 
   if (!drawnCard) {
@@ -121,7 +145,7 @@ private drawCard(player: Player): void {
   }
 
   // Add the card to the player's hand
-  const playerHand = this._playerHands.get(player);
+  const playerHand = this._playerHands.get(this.playID);
   if (playerHand) {
     playerHand.push(drawnCard);
   } else {
@@ -155,33 +179,48 @@ private reshuffleDeck(): void {
 }
 
   
-    // After handling the action, you might want to update the game state,
-    // check for game end, update turn, notify other players, etc.
-    this.updateGameState();
-    this.checkForGameEnd();
-  }
 
   /**
    * Updates the game state based on the current state and the action taken by a player.
    */
-  public updateGameState(): void {
-    // Implement the logic to update the game state
+protected _updateFrom( newModel: GameArea<UnoGameState>): void {
+    const wasOurTurn: boolean = this.whoseTurn()?.id === this._townController.ourPlayer.id;
+    super._updateFrom(newModel);
+    const newState = newModel.game;
+    if(newState){
+      //UPDATE DECKOFCARDS PLAYERHANDS CURRENT CARD TURN
+      const newDeck : DeckOfCards = [];
+      const newPlayerHands : DeckOfCards = [];
+      const newTopCard : Card = noCard;
+      newState.state.
+    }
   }
 
   /**
    * Determines if the game has ended and who the winner is.
    */
-  public checkForGameEnd(): void {
+public checkForGameEnd(): void {
     // Implement the logic to determine game end and winner
   }
 
   /**
    * Sends a request to the server to play a card or draw a card
    */
-  public async makeMove(action: UnoMove): Promise<void> {
-    // Logic to send a move to the server
+public async makeMove(player:PlayerController, action: UnoMove): Promise<void> {
+  const instanceID = this._instanceID;
+  if (!instanceID || this._model.game?.state.status !== 'IN_PROGRESS') {
+    throw new Error(NO_GAME_IN_PROGRESS_ERROR);
   }
+  await this._townController.send
+    
+}
 
   // Additional methods can be added here for more complex game logic,
   // such as dealing cards, handling special cards, etc.
+private endGame(player: PlayerController) : void {
+    console.log(`The player ${player.userName} win!`);
 }
+
+
+}
+
