@@ -20,9 +20,6 @@ export default class UnoPlayer {
     this.readyUp = false;
   }
 
-  public playerReadyUp(): void {
-    this.readyUp = !this.readyUp;
-  }
   // Getter methods for Player properties
 
   get userName(): string {
