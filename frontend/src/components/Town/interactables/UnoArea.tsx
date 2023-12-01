@@ -27,7 +27,7 @@ import {
   import useTownController from '../../../hooks/useTownController';
   import { GameResult, GameStatus, InteractableID } from '../../../types/CoveyTownSocket';
   import GameAreaInteractable from './GameArea';
-  import { UnoCard as UnoCardModel, Color, Value } from '../../../types/CoveyTownSocket';
+  import { Card as UnoCardModel, Color, Value } from '../../../types/CoveyTownSocket';
   import UnoCardComponent from '../../../classes/UnoCards';
   
   /**
@@ -178,7 +178,9 @@ import {
         <List aria-label='list of players in the game'>
         </List>
         <Flex direction='row' justify='center' align='center' width='80vw' mx='auto' marginTop='2rem' gap={5}>
-          <UnoTable />
+          <UnoTable>
+            
+          </UnoTable>
           <TurnIndicator currentTurn="Player's Name" />
         </Flex>
       </Container>
