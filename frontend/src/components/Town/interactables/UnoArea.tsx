@@ -16,14 +16,19 @@ import {
     ModalHeader,
     ModalOverlay,
     useToast,
+    Flex
   } from '@chakra-ui/react';
   import React, { useCallback, useEffect, useState } from 'react';
+  import UnoTable from './UnoTable';
+  import TurnIndicator from './TurnIndicator';
   import UnoAreaController from '../../../classes/UnoAreaController';
   import PlayerController from '../../../classes/PlayerController';
   import { useInteractable, useInteractableAreaController } from '../../../classes/TownController';
   import useTownController from '../../../hooks/useTownController';
   import { GameResult, GameStatus, InteractableID } from '../../../types/CoveyTownSocket';
   import GameAreaInteractable from './GameArea';
+  import { UnoCard as UnoCardModel, Color, Value } from '../../../types/CoveyTownSocket';
+  import UnoCardComponent from '../../../classes/UnoCards';
   
   /**
    * The UnoArea component renders the Uno game area.
@@ -139,7 +144,7 @@ import {
     }
   
     return (
-      <Container>
+      <Container maxWidth="80vw">
         <Accordion allowToggle>
           <AccordionItem>
             <Heading as='h3'>
@@ -172,6 +177,10 @@ import {
         {gameStatusText}
         <List aria-label='list of players in the game'>
         </List>
+        <Flex direction='row' justify='center' align='center' width='80vw' mx='auto' marginTop='2rem' gap={5}>
+          <UnoTable />
+          <TurnIndicator currentTurn="Player's Name" />
+        </Flex>
       </Container>
     );
   }
@@ -197,10 +206,10 @@ import {
       return (
         <Modal isOpen={true} onClose={closeModal} closeOnOverlayClick={false}>
           <ModalOverlay />
-          <ModalContent>
+          <ModalContent marginTop='1.5rem' marginBottom='1.5rem' maxWidth="90vw" height="90vh">
             <ModalHeader>{gameArea.name}</ModalHeader>
             <ModalCloseButton />
-            <UnoArea interactableID={gameArea.name} />;
+            <UnoArea interactableID={gameArea.name} />
           </ModalContent>
         </Modal>
       );
