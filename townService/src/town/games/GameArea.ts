@@ -36,6 +36,7 @@ export default abstract class GameArea<
       game: this._game?.toModel(),
       occupants: this.occupantsByID,
       type: this.getType(),
+      history: this.history
     };
   }
   

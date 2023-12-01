@@ -16,6 +16,7 @@ import {
     ModalHeader,
     ModalOverlay,
     useToast,
+    Image
   } from '@chakra-ui/react';
   import React, { useCallback, useEffect, useState } from 'react';
   import UnoAreaController from '../../../classes/UnoAreaController';
@@ -24,7 +25,9 @@ import {
   import useTownController from '../../../hooks/useTownController';
   import { GameResult, GameStatus, InteractableID } from '../../../types/CoveyTownSocket';
   import GameAreaInteractable from './GameArea';
-  
+  import { Card , DeckOfCards} from '../../../types/CoveyTownSocket';
+  import { Flex } from '@chakra-ui/react';
+  import { VideoProvider, } from '../../VideoCall/VideoFrontend/components/VideoProvider';
   /**
    * The UnoArea component renders the Uno game area.
    * It renders the current state of the area, optionally allowing the player to join the game.
@@ -137,42 +140,112 @@ import {
         </b>
       );
     }
+    const baseCard : Card = {
+      color: "Red",
+      value: '1'
+    }
+    const Cards: DeckOfCards = [{ color: 'Blue', value:'3'},{ color: 'Red', value: '7'},{color: 'Green', value:'5'},  baseCard]
+    const PlayerHand = ({ listOfCards }) => {
+      // Inline style for the card buttons
+      const cardButtonStyle = {
+        margin: '0 10px', // This adds 10 pixels of space on the left and right of each card
+      };
+    
+      return (
+        <div className="player-hand" style={{ display: 'flex', justifyContent: 'center' }}>
+          {listOfCards.map((card, index) => (
+            <button key={index} style={cardButtonStyle} className="card-button">
+              {card.value}
+            </button>
+          ))}
+        </div>
+      );
+    };
+    
+    const DrawDeckOfCards = () => {
+      return (
+        <Button p={0} overflow="hidden">
+          <Image 
+            src="../../../../public/assets/images/uno_assets_2d/PNGs/small/red_0.png" 
+            alt="Card" 
+            maxWidth="100px" 
+            height="max" 
+            objectFit="contain"
+          />
+        </Button>
+      );
+    };
+    const TurnTable = ({ Player }  ) => {
+      const turnBoxStyle = {
+        backgroundColor: 'red', 
+        width: '100px',        
+        height: '100px',        
+        display: 'flex',        
+        justifyContent: 'center', 
+        alignItems: 'center',   
+        borderRadius: '20px',
+        border: '2px solid black',
+        textAlign: 'center', 
+        flexDirection: 'column', 
+      };
+    
+      return (
+        <h1 style={turnBoxStyle}>
+          It Is {Player._userName}'s Turn
+        </h1>
+      )
+    }
+    
+  
+    const basePlayer : PlayerController = new PlayerController('20','John', {x: 20,y:100, moving: false, rotation: 'front' })
+    const TopCard = ({ card }) => {
+      return (
+        <div>
+          The Color is: {card.color} and the Value is {card.value}
+        </div>
+      );
+    };
+    
+    const RedBoard = ({ children  }) => {
+      const boxBodyStyle = {
+        backgroundColor: 'red',
+        color: 'white',
+        padding: '20px', 
+        borderRadius: '100%', 
+        display: 'flex',
+        border: '2px solid black',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '200px', 
+        width: '600px', 
+        margin: 'auto'
+      };  
+    
+      return (
+        <div style={boxBodyStyle}>
+          {children}
+        </div>
+      );
+    };
   
     return (
-      <Container>
-        <Accordion allowToggle>
-          <AccordionItem>
-            <Heading as='h3'>
-              <AccordionButton>
-                <Box as='span' flex='1' textAlign='left'>
-                  Leaderboard
-                  <AccordionIcon />
-                </Box>
-              </AccordionButton>
-            </Heading>
-          </AccordionItem>
-          <AccordionItem>
-            <Heading as='h3'>
-              <AccordionButton>
-                <Box as='span' flex='1' textAlign='left'>
-                  Current Observers
-                  <AccordionIcon />
-                </Box>
-              </AccordionButton>
-            </Heading>
-            <AccordionPanel>
-              <List aria-label='list of observers in the game'>
-                {observers.map(player => {
-                  return <ListItem key={player.id}>{player.userName}</ListItem>;
-                })}
-              </List>
-            </AccordionPanel>
-          </AccordionItem>
-        </Accordion>
-        {gameStatusText}
-        <List aria-label='list of players in the game'>
-        </List>
-      </Container>
+<Container position="relative" display="flex" flexDirection="column" justifyContent="flex-end" height="100vh" p="0">
+  <Flex direction="row" justify="space-between" w="full">
+    <Flex direction="column" align="center" justify="center" flexGrow={1}>
+      <RedBoard>
+        <DrawDeckOfCards />
+        <TopCard card={baseCard} />
+      </RedBoard>
+      <PlayerHand listOfCards={Cards} />
+    </Flex>
+    <Box ml="4" bottom='20'> {/* Wrap TurnTable in a Box to apply margin */}
+      <TurnTable Player={basePlayer} />
+    </Box>
+  </Flex>
+</Container>
+
+
+
     );
   }
   
@@ -192,17 +265,19 @@ import {
         controller.leaveGame();
       }
     }, [townController, gameArea]);
-  
+    
     if (gameArea && gameArea.getData('type') === 'Uno') {
+
       return (
-        <Modal isOpen={true} onClose={closeModal} closeOnOverlayClick={false}>
-          <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>{gameArea.name}</ModalHeader>
-            <ModalCloseButton />
-            <UnoArea interactableID={gameArea.name} />;
-          </ModalContent>
-        </Modal>
+<Modal isOpen={true} onClose={closeModal} size='6x1' closeOnOverlayClick={false}>
+  <ModalOverlay />
+  <ModalContent h='85%'>
+    <ModalHeader>{gameArea.name}</ModalHeader>
+    <ModalCloseButton />
+    <UnoArea interactableID={gameArea.name} />;
+  </ModalContent>
+</Modal>
+
       );
     }
     return <></>;
