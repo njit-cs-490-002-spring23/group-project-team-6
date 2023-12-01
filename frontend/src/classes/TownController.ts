@@ -1,4 +1,5 @@
 import assert from 'assert';
+import { Interactable, InteractableCommand, InteractableCommandBase, InteractableCommandResponse, InteractableID } from '../types/CoveyTownSocket';
 import EventEmitter from 'events';
 import _ from 'lodash';
 import { useEffect, useState } from 'react';
@@ -20,8 +21,10 @@ import { isConversationArea, isViewingArea } from '../types/TypeUtils';
 import ConversationAreaController from './ConversationAreaController';
 import PlayerController from './PlayerController';
 import ViewingAreaController from './ViewingAreaController';
+import { nanoid } from 'nanoid';
 
-const CALCULATE_NEARBY_PLAYERS_DELAY = 300;
+const CALCULATE_NEARBY_PLAYERS_DELAY_MS = 300;
+const SOCKET_COMMAND_TIMEOUT_MS = 5000;
 
 export type ConnectionProperties = {
   userName: string;
@@ -108,6 +111,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
    * are received by the TownController in that service.
    */
   private _socket: CoveyTownSocket;
+
 
   /**
    * The REST API client to access the townsService
@@ -399,6 +403,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
       }
     });
 
+    
     /**
      * When an interactable's state changes, push that update into the relevant controller, which is assumed
      * to be either a Viewing Area or a Conversation Area, and which is assumed to already be represented by a
@@ -431,6 +436,35 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
     });
   }
 
+  public async sendInteractableCommand<CommandType extends InteractableCommand>(
+    interactableID: InteractableID,
+    command: CommandType,
+  ): Promise<InteractableCommandResponse<CommandType>['payload']> {
+    const commandMessage: InteractableCommand & InteractableCommandBase = {
+      ...command,
+      commandID: nanoid(),
+      interactableID: interactableID,
+    };
+    return new Promise((resolve, reject) => {
+      const watchdog = setTimeout(() => {
+        reject('Command timed out');
+      }, SOCKET_COMMAND_TIMEOUT_MS);
+
+      const ackListener = (response: InteractableCommandResponse<CommandType>) => {
+        if (response.commandID === commandMessage.commandID) {
+          clearTimeout(watchdog);
+          this._socket.off('commandResponse', ackListener);
+          if (response.error) {
+            reject(response.error);
+          } else {
+            resolve(response.payload);
+          }
+        }
+      };
+      this._socket.on('commandResponse', ackListener);
+      this._socket.emit('interactableCommand', commandMessage);
+    });
+  }
   /**
    * Emit a movement event for the current player, updating the state locally and
    * also notifying the townService that our player moved.
@@ -620,6 +654,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
   }
 }
 
+
 /**
  * A react hook to retrieve the settings for this town
  *
@@ -763,6 +798,7 @@ export function useInteractable<T extends Interactable>(
   }, [interactableType, townController, setInteractable]);
   return interactable;
 }
+
 /**
  * A react hook to retrieve the players that should be included in the video call
  *

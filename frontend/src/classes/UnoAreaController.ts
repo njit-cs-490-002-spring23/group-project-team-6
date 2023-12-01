@@ -21,19 +21,22 @@ export const PLAYER_NOT_IN_UNO_GAME_ERROR = 'Player is not in Uno game';
 export const NO_UNO_GAME_IN_PROGRESS_ERROR = 'No Uno game in progress';
 export const INVALID_CARD_PLAYED_ERROR = "Card can not be played";
 export const NO_GAME_IN_PROGRESS_ERROR = 'No game in progress';
-export const noCard: Card = {
+const noCard: Card = {
   color: "None",
   value: "None"
 };
 
+
 export type UnoEvents = GameEventTypes & {
   deckChanged: (deck: DeckOfCards) => void;
-  turnChanged: (isOurTurn: boolean) => void;
+  turnChanged: () => void;
   colorChanged: (color: Color) => void;
   valueChanged: (value: Value) => void;
+  drawFourPlaced: () => void;
   skippedPlaces: () => void;
 };
 
+// May have to change the players in the app that UnoArea.tsx
 export default class UnoAreaController extends GameAreaController<UnoGameState, UnoEvents> {
   private _deck: DeckOfCards = []; 
   private _currentCard: DeckOfCards = [];
@@ -51,7 +54,7 @@ public getHand(): DeckOfCards | undefined {
   /**
    * Returns the current card in play.
    */
-public getCurrentCard(): Card | undefined {
+public getCurrentCard(): Card {
     return this._currentCard[this._currentCard.length -1];
   }
 
@@ -81,13 +84,19 @@ public whoseTurn() : PlayerController | undefined {
   return this.occupants.find(eachOccupant => eachOccupant.id === this._model.game?.state.currentMovePlayer.id);
 }
 
-public _getNextPlayer(): PlayerController {
-  if(this._model.game?.state.direction === 'Clockwise')
-  {
-    return this.occupants.find(eachOcc => eachOcc.id === this._model.game?.state.)
+public _getNextPlayer(): PlayerController | null {
+  // Check if there are any occupants
+  if (this.occupants.length === 0) {
+    return null; // Return null if there are no occupants
   }
-    return this.occupants.find(eachOcc => eachOcc.id === this._model.game?.state.)
+
+  // Assuming we maintain a state to track the current player's index
+  this._currentPlayerIndex = (this._currentPlayerIndex + 1) % this._occupants.length;
+
+  // Return the next player in the list
+  return this._occupants[this._currentPlayerIndex];
 }
+
 private playCard(player: PlayerController, card: Card): void {
   const playerHand = this._playerHands
   if (!playerHand) {
@@ -99,7 +108,7 @@ private playCard(player: PlayerController, card: Card): void {
     throw new Error("Card not found in player's hand");
   }
 
-  this._playerHands.set(this._townController.ourPlayer.id, updatedHand);
+  this._playersHands.set(this._townController.ourPlayer.id, updatedHand);
   this._currentCard.push(card);
 }
 
@@ -164,13 +173,61 @@ protected _updateFrom( newModel: GameArea<UnoGameState>): void {
       //UPDATE DECKOFCARDS PLAYERHANDS CURRENT CARD TURN
       const newDeck : DeckOfCards = [];
       const newPlayerHands : DeckOfCards = [];
-      newState.state.currentCardValue
-      if(newState.state.currentCardValue != this.getCurrentCard()?.value && newState.state.currentColor != this.getCurrentCard()?.color)
+      if(newState.state.mostRecentMove?.cardPlaced.value === 'Skip')
+      {
+        this.emit("skippedPlaces")
+      }
+      if (newState.state.currentCardValue != this.getCurrentCard()?.value && newState.state.currentColor != this.getCurrentCard()?.color){
         this.emit("topCardChanged",this.getCurrentCard());
+      } else if(newState.state.currentCardValue != this.getCurrentCard()?.value){
+        this.emit("valueChanged",this.getCurrentCard().value);
+      } else if(newState.state.currentColor != this.getCurrentCard().color){
+        this.emit("colorChanged",this.getCurrentCard().color)
+      }
+      /*
+      protected _updateFrom(newModel: GameArea<UnoGameState>): void {
+  const wasOurTurn: boolean = this.whoseTurn()?.id === this._townController.ourPlayer.id;
+  super._updateFrom(newModel);
+  const newState = newModel.game;
+  if (newState) {
+    // Extract the new state information that is relevant for Uno
+    const newDeck: DeckOfCards = newState.state.deck;
+    const newPlayerHands: Map<String, DeckOfCards> = new Map(newState.state.playerHands);
+    const newCurrentCard: Card = { color: newState.state.currentColor, value: newState.state.currentCardValue}
+    const currentPlayerID: string = newState.state.currentMovePlayer.id;
+    const newTurn: boolean = currentPlayerID === this._townController.ourPlayer.id;
+
+    // Update deck and emit event if it has changed
+    if (!_.isEqual(newDeck, this._deck)) {
+      this._deck = newDeck;
+      this.emit('deckChanged', this._deck);
+    }
+
+    // Update player hands and emit event if they have changed
+    if (!_.isEqual(newPlayerHands, this._playersHands)) {
+      this._playersHands = newPlayerHands;
+      // You might need an additional event for player hand changes if necessary
+    }
+
+    // Update current card and emit event if it has changed
+    if (!_.isEqual(newCurrentCard, this.getCurrentCard())) {
+      this._currentCard = [newCurrentCard]; // Assuming current card is the last card in the array
+      this.emit('colorChanged', newCurrentCard.color);
+      this.emit('valueChanged', newCurrentCard.value);
+    }
+
+    // Emit turn changed event if the turn has changed
+    if (wasOurTurn !== newTurn) {
+      this.emit('turnChanged');
+    }
+  }
+}
+
+      */
+
       /// deck
-      newState.state.new
 
-
+      this.emit("turnChanged");
     }
   }
 
@@ -184,7 +241,7 @@ public checkForGameEnd(): void {
   /**
    * Sends a request to the server to play a card or draw a card
    */
-public async makeMove( action: UnoMove): Promise<void> {
+public async makeMove( action: UnoMove) {
   const instanceID = this._instanceID;
   if (!instanceID || this._model.game?.state.status !== 'IN_PROGRESS') {
     throw new Error(NO_GAME_IN_PROGRESS_ERROR);

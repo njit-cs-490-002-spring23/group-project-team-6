@@ -18,6 +18,7 @@ export type TownJoinResponse = {
 }
 
 export type PlayerID = string;
+export type InteractableID = string;
 export interface Player {
   id: PlayerID;
   userName: string;
@@ -39,7 +40,30 @@ export interface GameMove<MoveType> {
 }
 
 export interface UnoMove {
+    currentPlayer: Player;
     cardPlaced: Card;
+}
+
+export type InteractableCommandResponse<MessageType> = {
+  commandID: CommandID;
+  interactableID: InteractableID;
+  error?: string;
+  payload?: InteractableCommandResponseMap[MessageType];
+}
+
+interface InteractableCommandBase {
+  /**
+   * A unique ID for this command. This ID is used to match a command against a response
+   */
+  commandID: CommandID;
+  /**
+   * The ID of the interactable that this command is being sent to
+   */
+  interactableID: InteractableID;
+  /**
+   * The type of this command
+   */
+  type: string;
 }
 
 export interface GameResult {
@@ -57,6 +81,8 @@ export interface GameState{
 
 export interface UnoGameState extends GameState{
   winner?: PlayerID;
+  deck: DeckOfCards,
+  playerHand: DeckOfCards,
   mostRecentMove?: UnoMove;
   currentMovePlayer?: UnoPlayer;
   currentColor: Color;
@@ -141,6 +167,25 @@ export interface ViewingArea {
   video?: string;
   isPlaying: boolean;
   elapsedTimeSec: number;
+}
+
+export interface ServerToClientEvents {
+  playerMoved: (movedPlayer: Player) => void;
+  playerDisconnect: (disconnectedPlayer: Player) => void;
+  playerJoined: (newPlayer: Player) => void;
+  initialize: (initialData: TownJoinResponse) => void;
+  townSettingsUpdated: (update: TownSettingsUpdate) => void;
+  townClosing: () => void;
+  chatMessage: (message: ChatMessage) => void;
+  interactableUpdate: (interactable: Interactable) => void;
+  commandResponse: (response: InteractableCommandResponse) => void;
+}
+
+export interface ClientToServerEvents {
+  chatMessage: (message: ChatMessage) => void;
+  playerMovement: (movementData: PlayerLocation) => void;
+  interactableUpdate: (update: Interactable) => void;
+  interactableCommand: (command: InteractableCommand & InteractableCommandBase) => void;
 }
 
 export type InteractableCommand =  

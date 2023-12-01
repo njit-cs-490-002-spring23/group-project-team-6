@@ -121,5 +121,5 @@ export default abstract class GameAreaController<
     return this._model;
   }
 
-  setIn
+
 }
