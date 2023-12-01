@@ -49,7 +49,15 @@ export interface GameResult {
 
 export type GameStatus = 'IN_PROGRESS' | 'WAITING_TO_START' | 'OVER';
 
-export type Interactable = ConversationArea | ViewingArea | UnoArea;
+export type InteractableType = ConversationArea | ViewingArea | UnoArea;
+
+export interface Interactable {
+  type: InteractableType;
+  id: InteractableID;
+  occupants: PlayerID[];
+}
+
+export type InteractableID = string;
 
 export interface GameState{
   status: GameStatus;
@@ -124,11 +132,10 @@ export interface GameArea<T extends GameState> extends Interactable {
   game: GameInstance<T> | undefined;
   history: GameResult[];
 }
-export interface ConversationArea {
-  id: string;
+export interface ConversationArea extends Interactable {
   topic?: string;
-  occupantsByID: string[];
 };
+
 export interface BoundingBox {
   x: number;
   y: number;
@@ -136,11 +143,38 @@ export interface BoundingBox {
   height: number;
 };
 
-export interface ViewingArea {
+export interface ViewingArea extends Interactable {
   id: string;
   video?: string;
   isPlaying: boolean;
   elapsedTimeSec: number;
+}
+
+export type InteractableCommandResponse<MessageType> = {
+  commandID: CommandID;
+  interactableID: InteractableID;
+  error?: string;
+  payload?: InteractableCommandResponseMap[MessageType];
+}
+
+/**
+ * Base type for a command that can be sent to an interactable.
+ * This type is used only by the client/server interface, which decorates
+ * an @see InteractableCommand with a commandID and interactableID
+ */
+interface InteractableCommandBase {
+  /**
+   * A unique ID for this command. This ID is used to match a command against a response
+   */
+  commandID: CommandID;
+  /**
+   * The ID of the interactable that this command is being sent to
+   */
+  interactableID: InteractableID;
+  /**
+   * The type of this command
+   */
+  type: string;
 }
 
 export type InteractableCommand =  
@@ -197,11 +231,13 @@ export interface ServerToClientEvents {
   townClosing: () => void;
   chatMessage: (message: ChatMessage) => void;
   interactableUpdate: (interactable: Interactable) => void;
+  commandResponse: (response: InteractableCommandResponse) => void;
 }
 
 export interface ClientToServerEvents {
   chatMessage: (message: ChatMessage) => void;
   playerMovement: (movementData: PlayerLocation) => void;
   interactableUpdate: (update: Interactable) => void;
+  interactableCommand: (command: InteractableCommand & InteractableCommandBase) => void;
 }
 

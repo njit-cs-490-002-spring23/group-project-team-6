@@ -9,7 +9,7 @@ import UnoPlayer from '../../lib/UnoPlayer';
     GameInstance,
     InteractableCommand,
     InteractableCommandReturnType,
-    Interactable,
+    InteractableType,
     UnoGameState,
   } from '../../types/CoveyTownSocket';
   import GameArea from './GameArea';
@@ -22,7 +22,7 @@ import UnoPlayer from '../../lib/UnoPlayer';
  */
 export default class UnoArea extends GameArea<UnoGame> {
   // eslint-disable-next-line class-methods-use-this
-  protected getType(): Interactable {
+  protected getType(): InteractableType {
     return 'UnoArea';
   }
 

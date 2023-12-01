@@ -1,5 +1,4 @@
 import { BroadcastOperator } from 'socket.io';
-
 import { mock, mockDeep, MockProxy } from 'jest-mock-extended';
 import { nanoid } from 'nanoid';
 import { SocketReservedEventsMap } from 'socket.io/dist/socket';
@@ -25,6 +24,7 @@ import {
   ViewingArea,
 } from './types/CoveyTownSocket';
 import UnoPlayer from './lib/UnoPlayer';
+
 /**
  * Create a new conversation area using some random defaults
  * @param params
@@ -37,8 +37,9 @@ export function createConversationForTesting(params?: {
 }): ConversationArea {
   return {
     id: params?.conversationID || nanoid(),
-    occupantsByID: [],
+    occupants: [],
     topic: params?.conversationTopic || nanoid(),
+    type: 'ConversationArea',
   };
 }
 
@@ -194,6 +195,7 @@ export function createPlayerForTesting(): Player {
 export function createUnoPlayerForTesting(): UnoPlayer {
   return new UnoPlayer(createPlayerForTesting());
 }
+
 /**
  * Assert that two arrays contain the same members (by strict === equality), allowing them to appear in different orders
  * @param actual

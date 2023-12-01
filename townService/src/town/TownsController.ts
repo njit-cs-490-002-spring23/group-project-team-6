@@ -107,6 +107,7 @@ export class TownsController extends Controller {
     }
   }
 
+  
   /**
    * Creates a conversation area in a given town
    * @param townID ID of the town in which to create the new conversation area
@@ -118,13 +119,13 @@ export class TownsController extends Controller {
   public async createConversationArea(
     @Path() townID: string,
     @Header('X-Session-Token') sessionToken: string,
-    @Body() requestBody: ConversationArea,
+    @Body() requestBody: Omit<ConversationArea, 'type'>,
   ): Promise<void> {
     const town = this._townsStore.getTownByID(townID);
     if (!town?.getPlayerBySessionToken(sessionToken)) {
       throw new InvalidParametersError('Invalid values specified');
     }
-    const success = town.addConversationArea(requestBody);
+    const success = town.addConversationArea({ ...requestBody, type: 'ConversationArea' });
     if (!success) {
       throw new InvalidParametersError('Invalid values specified');
     }
@@ -146,7 +147,7 @@ export class TownsController extends Controller {
   public async createViewingArea(
     @Path() townID: string,
     @Header('X-Session-Token') sessionToken: string,
-    @Body() requestBody: ViewingArea,
+    @Body() requestBody: Omit<ViewingArea, 'type'>,
   ): Promise<void> {
     const town = this._townsStore.getTownByID(townID);
     if (!town) {
@@ -155,11 +156,12 @@ export class TownsController extends Controller {
     if (!town?.getPlayerBySessionToken(sessionToken)) {
       throw new InvalidParametersError('Invalid values specified');
     }
-    const success = town.addViewingArea(requestBody);
+    const success = town.addViewingArea({ ...requestBody, type: 'ViewingArea' });
     if (!success) {
       throw new InvalidParametersError('Invalid values specified');
     }
   }
+  
 
   /**
    * Connects a client's socket to the requested town, or disconnects the socket if no such town exists
@@ -168,6 +170,7 @@ export class TownsController extends Controller {
    * auth object configured with the desired townID to join and username to use
    *
    */
+  
   public async joinTown(socket: CoveyTownSocket) {
     // Parse the client's requested username from the connection
     const { userName, townID } = socket.handshake.auth as { userName: string; townID: string };
@@ -193,4 +196,5 @@ export class TownsController extends Controller {
       interactables: town.interactables.map(eachInteractable => eachInteractable.toModel()),
     });
   }
+  
 }

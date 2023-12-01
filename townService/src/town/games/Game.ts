@@ -5,6 +5,7 @@ import {
   GameMove,
   GameResult,
   GameState,
+  PlayerID,
 } from '../../types/CoveyTownSocket';
 import UnoPlayer from '../../lib/UnoPlayer';
 
@@ -54,6 +55,8 @@ export default abstract class Game<StateType extends GameState, MoveType> {
    */
   public abstract applyMove(move: GameMove<MoveType>): void;
 
+  public abstract get NextPlayerID(): PlayerID;
+  
   /**
    * Attempt to join a game.
    * This method should be implemented by subclasses.

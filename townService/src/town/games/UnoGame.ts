@@ -15,6 +15,7 @@ import {
   Card,
   Color,
   Value,
+  PlayerID,
   UnoGameDirection,
 } from '../../types/CoveyTownSocket';
 import UnoPlayer from '../../lib/UnoPlayer';
@@ -110,6 +111,11 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
       this._shuffleAndDealCards();
     }
   }
+
+  public get NextPlayerID(): PlayerID {
+    return this._getNextPlayer().id;
+  }
+
 
   public _dealCards(): void {
     this._shuffleDeck();
