@@ -5,10 +5,10 @@ import InvalidParametersError, {
   INVALID_MOVE_MESSAGE,
   GAME_FULL_MESSAGE,
   GAME_NOT_IN_PROGRESS_MESSAGE,
-  NOT_YOUR_TURN_MESSAGE
+  NOT_YOUR_TURN_MESSAGE,
 } from '../../lib/InvalidParametersError';
 import {
-  DeckOfCards, 
+  DeckOfCards,
   UnoGameState,
   GameMove,
   UnoMove,
@@ -30,19 +30,22 @@ const MIN_PLAYERS = 2;
 export default class UnoGame extends Game<UnoGameState, UnoMove> {
   deckOfCards: DeckOfCards;
 
+  cardImages: string[];
+
   discardPile: DeckOfCards;
 
   public constructor() {
     super({
-        mostRecentMove: undefined,
-        currentMovePlayer: undefined, 
-        status: 'WAITING_TO_START',
-        numberOfMovesSoFar: 0,
-        currentColor: 'None',
-        currentCardValue: 'None',
-        direction: 'Counter_Clockwise',
+      mostRecentMove: undefined,
+      currentMovePlayer: undefined,
+      status: 'WAITING_TO_START',
+      numberOfMovesSoFar: 0,
+      currentColor: 'None',
+      currentCardValue: 'None',
+      direction: 'Counter_Clockwise',
     });
     this.deckOfCards = [];
+    this.cardImages = [];
     this.discardPile = [];
   }
 
@@ -102,12 +105,12 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     player.readyUp = !player.readyUp;
     let allPlayersReady = true;
     for (let j = 0; j < this._players.length; j++) {
-      if (!this._players[j].readyUp){
+      if (!this._players[j].readyUp) {
         allPlayersReady = false;
         break;
       }
     }
-    if (allPlayersReady){
+    if (allPlayersReady) {
       this._shuffleAndDealCards();
     }
   }
@@ -116,11 +119,10 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     return this._getNextPlayer().id;
   }
 
-
   public _dealCards(): void {
     this._shuffleDeck();
-    for (let i = 0; i < 7; i++){
-      for (let j = 0; j < this._players.length; j++){
+    for (let i = 0; i < 7; i++) {
+      for (let j = 0; j < this._players.length; j++) {
         this.drawFromDeck(this._players[j]);
       }
     }
@@ -131,19 +133,16 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     if (card) {
       player.cardsInHand?.push(card);
       this.discardPile.push(card);
-    }
-    else if (this.discardPile){
+    } else if (this.discardPile) {
       this.deckOfCards = [...this.discardPile];
       card = this.deckOfCards.pop();
-      if (card){
+      if (card) {
         player.cardsInHand?.push(card);
         this.discardPile.push(card);
-      }
-      else{
+      } else {
         throw new InvalidParametersError(GAME_NOT_IN_PROGRESS_MESSAGE);
       }
-    }
-    else{
+    } else {
       throw new InvalidParametersError(GAME_NOT_IN_PROGRESS_MESSAGE);
     }
   }
@@ -151,6 +150,11 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
   public updateColor(color: Color): void {
     this.state.currentColor = color;
   }
+
+  public getCardImages(): string[] {
+    return this.cardImages;
+  }
+  
 
   /*
    * Applies a player's move to the game.
@@ -171,28 +175,26 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
    */
   public applyMove(move: GameMove<UnoMove>): void {
     const [first] = this._players;
-    if (!this.state.currentMovePlayer)
-      this.state.currentMovePlayer = first;
-    if (move.playerID !== this.state.currentMovePlayer.id){
-       throw new InvalidParametersError(NOT_YOUR_TURN_MESSAGE);
+    if (!this.state.currentMovePlayer) this.state.currentMovePlayer = first;
+    if (move.playerID !== this.state.currentMovePlayer.id) {
+      throw new InvalidParametersError(NOT_YOUR_TURN_MESSAGE);
     }
-    if (move.move.cardPlaced.value === 'Wild')
-      this._wildCardPlaced(move.move);
+    if (move.move.cardPlaced.value === 'Wild') this._wildCardPlaced(move.move);
     else if (move.move.cardPlaced.value === 'Wild Draw Four')
       this._wildDrawfourCardPlaced(move.move);
-    else if (this.state.currentColor === move.move.cardPlaced.color || this.state.currentColor === 'None' || this.state.currentCardValue === 'None'){
+    else if (
+      this.state.currentColor === move.move.cardPlaced.color ||
+      this.state.currentColor === 'None' ||
+      this.state.currentCardValue === 'None'
+    ) {
       this.updateColor(move.move.cardPlaced.color);
-      if (move.move.cardPlaced.value === 'Draw Two')
-        this._drawtwoCardPlaced(move.move);
-      else if (move.move.cardPlaced.value === 'Skip')
-        this._skipCardPlaced(move.move);
-      else if (move.move.cardPlaced.value === 'Reverse')
-        this._reverseCardPlaced(move.move);
-      else{
+      if (move.move.cardPlaced.value === 'Draw Two') this._drawtwoCardPlaced(move.move);
+      else if (move.move.cardPlaced.value === 'Skip') this._skipCardPlaced(move.move);
+      else if (move.move.cardPlaced.value === 'Reverse') this._reverseCardPlaced(move.move);
+      else {
         this._applyMoveUpdateGameState(move.move);
       }
-    }
-    else{
+    } else {
       throw new InvalidParametersError(INVALID_MOVE_MESSAGE);
     }
     this.state.numberOfMovesSoFar++;
@@ -209,7 +211,7 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     this._updatePlayerPositions();
     this.state.status = 'WAITING_TO_START';
   }
-  
+
   public _leave(player: UnoPlayer): void {
     const playerIndex = this._players.findIndex(p => p.id === player.id);
 
@@ -219,14 +221,13 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     this._players.splice(playerIndex, 1);
 
     this._updatePlayerPositions();
-    
+
     if (this.state.status === 'IN_PROGRESS' && this._players.length < MIN_PLAYERS) {
       this.state.status = 'OVER';
-  
+
       if (this._players.length === 1) {
         this.state.winner = this._players[0].id;
-      }
-      else {
+      } else {
         this.state.status = 'WAITING_TO_START';
         this.state.winner = undefined;
       }
@@ -247,28 +248,51 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
 
   private _createDeck(): void {
     const colors: Color[] = ['Red', 'Green', 'Blue', 'Yellow'];
-    const values: Value[] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'Skip', 'Reverse', 'Draw Two'];
+    const values: Value[] = [
+      '0',
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8',
+      '9',
+      'Skip',
+      'Reverse',
+      'Draw Two',
+    ];
+    const createSrc = (color: Color, value: Value) =>
+      `/assets/images/uno_assets_2d/PNGs/small/${color.toLowerCase()}_${value}.png`;
     const wildCard: Card = {
       color: 'None',
-      value: 'Wild'
-    }
+      value: 'Wild',
+      src: '/assets/images/uno_assets_2d/PNGs/small/wild_color_changer.png',
+    };
     const wildDrawFourCard: Card = {
       color: 'None',
-      value: 'Wild Draw Four'
-    }
+      value: 'Wild Draw Four',
+      src: '/assets/images/uno_assets_2d/PNGs/small/wild_pick_four.png',
+    };
     colors.forEach(color => {
       values.forEach(value => {
+        const src = createSrc(color, value);
         for (let i = 0; i < 4; i++) {
-          this.deckOfCards.push({ color, value });
+          this.deckOfCards.push({ color, value, src });
+          this.cardImages.push(src);
         }
       });
     });
     this.deckOfCards.push(wildCard);
+    this.cardImages.push(wildCard.src); // Push the wild card src
     this.deckOfCards.push(wildCard);
+    this.cardImages.push(wildCard.src); // Push the wild card src
     this.deckOfCards.push(wildDrawFourCard);
+    this.cardImages.push(wildDrawFourCard.src); // Push the wild draw four card src
     this.deckOfCards.push(wildDrawFourCard);
+    this.cardImages.push(wildDrawFourCard.src);
   }
-
 
   private _updatePlayerPositions(): void {
     this._players.forEach((player, index, arr) => {
@@ -277,56 +301,60 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     });
   }
 
-  private _checkIfWinningMove() : void {
-    if (this.state.currentMovePlayer.cardsInHand.length === 0){
+  private _checkIfWinningMove(): void {
+    if (this.state.currentMovePlayer.cardsInHand.length === 0) {
       this.state = {
         ...this.state,
         status: 'OVER',
-        winner: this.state.currentMovePlayer
+        winner: this.state.currentMovePlayer,
       };
-    } 
+    }
   }
 
   private _getNextPlayer(): UnoPlayer {
-    return this.state.direction === 'Counter_Clockwise' ? this.state.currentMovePlayer.playerToRight : this.state.currentMovePlayer.playerToLeft;
+    return this.state.direction === 'Counter_Clockwise'
+      ? this.state.currentMovePlayer.playerToRight
+      : this.state.currentMovePlayer.playerToLeft;
   }
 
-  private _applyMoveUpdateGameState(move: UnoMove){
-    this.state.currentMovePlayer.cardsInHand = this.state.currentMovePlayer.cardsInHand.filter((card: Card) => card !== move.cardPlaced);
+  private _applyMoveUpdateGameState(move: UnoMove) {
+    this.state.currentMovePlayer.cardsInHand = this.state.currentMovePlayer.cardsInHand.filter(
+      (card: Card) => card !== move.cardPlaced,
+    );
     this.state.mostRecentMove = move;
     this.state.currentCardValue = move.cardPlaced.value;
     this._checkIfWinningMove();
     this.state.currentMovePlayer = this._getNextPlayer();
   }
 
-  private _wildCardPlaced(move: UnoMove) : void {
+  private _wildCardPlaced(move: UnoMove): void {
     this.state.currentColor = move.cardPlaced.color;
     this._applyMoveUpdateGameState(move);
   }
 
-  private _wildDrawfourCardPlaced(move: UnoMove) : void {
-    for (let i = 0; i < 4; i++){
+  private _wildDrawfourCardPlaced(move: UnoMove): void {
+    for (let i = 0; i < 4; i++) {
       this.drawFromDeck(this._getNextPlayer());
     }
     this._applyMoveUpdateGameState(move);
     this.state.currentMovePlayer = this._getNextPlayer();
   }
 
-  private _drawtwoCardPlaced(move: UnoMove) : void {
-    for (let i = 0; i < 2; i++){
+  private _drawtwoCardPlaced(move: UnoMove): void {
+    for (let i = 0; i < 2; i++) {
       this.drawFromDeck(this._getNextPlayer());
     }
     this._applyMoveUpdateGameState(move);
     this.state.currentMovePlayer = this._getNextPlayer();
   }
 
-  private _skipCardPlaced(move: UnoMove) : void {
+  private _skipCardPlaced(move: UnoMove): void {
     this._applyMoveUpdateGameState(move);
     this.state.currentMovePlayer = this._getNextPlayer();
   }
 
-  private _reverseCardPlaced(move: UnoMove) : void {
-    this.state.direction = this.state.direction === "Clockwise" ? "Counter_Clockwise" : "Clockwise";
+  private _reverseCardPlaced(move: UnoMove): void {
+    this.state.direction = this.state.direction === 'Clockwise' ? 'Counter_Clockwise' : 'Clockwise';
     this._applyMoveUpdateGameState(move);
   }
 

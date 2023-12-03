@@ -104,6 +104,7 @@ export type Value =
 export interface Card {
   color: Color;
   value: Value;
+  src: string;
 }
 
 export type DeckOfCards = Card[];
