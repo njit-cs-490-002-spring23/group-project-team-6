@@ -98,6 +98,22 @@ function UnoArea({ interactableID }: { interactableID: InteractableID }): JSX.El
     };
   }, [townController, gameAreaController, toast]);
 
+  type Player = {
+    id: string;
+    name: string;
+    isReady: boolean;
+  };
+  const PlayerComponent = ({ player, onReady }: { player: Player; onReady: (id: string) => void }) => {
+    return (
+      <div>
+        <p>{player.name}</p>
+        <button onClick={() => onReady(player.id)} disabled={player.isReady}>
+          {player.isReady ? 'Ready!' : 'Ready?'}
+        </button>
+      </div>
+    );
+  };
+
   const [showGame, setShowGame] = useState(false);
   const [currentPlayer, setCurrentPlayer] = useState('Player 1');
 
@@ -154,7 +170,7 @@ function UnoArea({ interactableID }: { interactableID: InteractableID }): JSX.El
   return (
     <Container maxWidth="80vw">
       {gameStatusText}
-      <Flex direction='row' justify='center' align='center' width='80vw' mx='auto' marginTop='2rem' gap={5}>
+      <Flex flexDirection='row' justify='center' align='center' width='80vw' mx='auto' marginTop='2rem' gap={5}>
         <div>
           {showGame ? (
             <>
