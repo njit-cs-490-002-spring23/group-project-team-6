@@ -28,6 +28,10 @@ import {
   import { Card , DeckOfCards} from '../../../types/CoveyTownSocket';
   import { Flex } from '@chakra-ui/react';
   import { VideoProvider } from '../../VideoCall/VideoFrontend/components/VideoProvider';
+import VideoGrid from '../../VideoCall/VideoOverlay/VideoOverlay';
+import { useAppState } from '../../VideoCall/VideoFrontend/state';
+import useConnectionOptions from '../../VideoCall/VideoFrontend/utils/useConnectionOptions/useConnectionOptions';
+  
   /**
    * The UnoArea component renders the Uno game area.
    * It renders the current state of the area, optionally allowing the player to join the game.
@@ -176,15 +180,16 @@ import {
     
     const DrawDeckOfCards = () => {
       return (
-        <Button p={0} overflow="hidden">
-          <Image 
-            src="../../../../public/assets/images/uno_assets_2d/PNGs/small/red_0.png" 
-            alt="Card" 
-            maxWidth="100px" 
-            height="max" 
-            objectFit="contain"
-          />
-        </Button>
+<Button p={0}>
+  <Image 
+    src="../../../../public/assets/images/uno_assets_2d/PNGs/small/red_0.png" 
+    alt="Red Uno Card" 
+    maxWidth="auto" 
+    height="auto" 
+    objectFit="contain"
+  />
+</Button>
+
       );
     };
     const TurnTable = ({ Player }  ) => {
@@ -239,7 +244,11 @@ import {
         </div>
       );
     };
-  
+    const { error, setError } = useAppState();
+    const connectionOptions = useConnectionOptions();
+    const onDisconnect = useCallback(() => {
+      townController?.disconnect();
+    }, [townController]);
     return (
 <>
   <Container>
@@ -262,6 +271,9 @@ import {
         </AccordionPanel>
       </AccordionItem>
     </Accordion>
+    <VideoProvider options={connectionOptions} onError={setError} onDisconnect={onDisconnect}>
+      <VideoGrid preferredMode='fullwidth'/>
+    </VideoProvider>
   </Container>
 
   <div style={{ height: '200px' }}></div> {/* Spacing between Containers */}
