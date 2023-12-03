@@ -27,7 +27,7 @@ import {
   import GameAreaInteractable from './GameArea';
   import { Card , DeckOfCards} from '../../../types/CoveyTownSocket';
   import { Flex } from '@chakra-ui/react';
-  import { VideoProvider, } from '../../VideoCall/VideoFrontend/components/VideoProvider';
+  import { VideoProvider } from '../../VideoCall/VideoFrontend/components/VideoProvider';
   /**
    * The UnoArea component renders the Uno game area.
    * It renders the current state of the area, optionally allowing the player to join the game.
@@ -146,17 +146,29 @@ import {
     }
     const Cards: DeckOfCards = [{ color: 'Blue', value:'3'},{ color: 'Red', value: '7'},{color: 'Green', value:'5'},  baseCard]
     const PlayerHand = ({ listOfCards }) => {
-      // Inline style for the card buttons
       const cardButtonStyle = {
-        margin: '0 10px', // This adds 10 pixels of space on the left and right of each card
+        margin: '0 10px', 
       };
     
       return (
         <div className="player-hand" style={{ display: 'flex', justifyContent: 'center' }}>
-          {listOfCards.map((card, index) => (
-            <button key={index} style={cardButtonStyle} className="card-button">
-              {card.value}
-            </button>
+          {listOfCards.map((card : Card) => (
+            <Button key={card} style={cardButtonStyle} className="card-button" 
+            onClick={async () => {
+              try { 
+                await gameAreaController.makeMove(
+                  card
+                );
+              } catch (e) {
+                toast ({
+                  title: "Not Working D:",
+                  description: (e as Error).toString(),
+                  status: 'error',
+                });
+              }
+            }}>
+              {card.color}
+            </Button>
           ))}
         </div>
       );
@@ -229,22 +241,46 @@ import {
     };
   
     return (
-<Container position="relative" display="flex" flexDirection="column" justifyContent="flex-end" height="100vh" p="0">
-  <Flex direction="row" justify="space-between" w="full">
-    <Flex direction="column" align="center" justify="center" flexGrow={1}>
-      <RedBoard>
-        <DrawDeckOfCards />
-        <TopCard card={baseCard} />
-      </RedBoard>
-      <PlayerHand listOfCards={Cards} />
+<>
+  <Container>
+    <Accordion allowToggle>
+      <AccordionItem>
+        <Heading as='h3'>
+          <AccordionButton>
+            <Box as='span' flex='1' textAlign='center'>
+              Current Observers
+              <AccordionIcon />
+            </Box>
+          </AccordionButton>
+        </Heading>
+        <AccordionPanel>
+          <List aria-label='list of observers in the game'>
+            {observers.map(player => (
+              <ListItem key={player.id}>{player.userName}</ListItem>
+            ))}
+          </List>
+        </AccordionPanel>
+      </AccordionItem>
+    </Accordion>
+  </Container>
+
+  <div style={{ height: '200px' }}></div> {/* Spacing between Containers */}
+
+  <Container>
+    <Flex direction="row" justify="space-between" w="full">
+      <Flex direction="column" align="center" justify="center" flexGrow={1}>
+        <RedBoard>
+          <DrawDeckOfCards />
+          <TopCard card={baseCard} />
+        </RedBoard>
+        <PlayerHand listOfCards={Cards} />
+      </Flex>
+      <Box ml="4" bottom='20' >
+        <TurnTable Player={basePlayer} />
+      </Box>
     </Flex>
-    <Box ml="4" bottom='20'> {/* Wrap TurnTable in a Box to apply margin */}
-      <TurnTable Player={basePlayer} />
-    </Box>
-  </Flex>
-</Container>
-
-
+  </Container>
+</>
 
     );
   }
@@ -272,7 +308,9 @@ import {
 <Modal isOpen={true} onClose={closeModal} size='6x1' closeOnOverlayClick={false}>
   <ModalOverlay />
   <ModalContent h='85%'>
-    <ModalHeader>{gameArea.name}</ModalHeader>
+    <ModalHeader>
+      {gameArea.name}
+    </ModalHeader>
     <ModalCloseButton />
     <UnoArea interactableID={gameArea.name} />;
   </ModalContent>
