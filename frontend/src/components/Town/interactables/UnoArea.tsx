@@ -67,7 +67,6 @@ function UnoArea({ interactableID }: { interactableID: InteractableID }): JSX.El
 
   const handleReady = async () => {
     setIsReady(true);
-    UnoGame.allPlayersReady;
     await unoAreaController.EveryOneReady;
   };
 
