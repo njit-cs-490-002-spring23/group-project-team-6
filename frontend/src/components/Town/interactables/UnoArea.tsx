@@ -27,6 +27,7 @@ import { useInteractable, useInteractableAreaController } from '../../../classes
 import useTownController from '../../../hooks/useTownController';
 import { GameResult, GameStatus, InteractableID } from '../../../types/CoveyTownSocket';
 import GameAreaInteractable from './GameArea';
+import UnoGame from '../../../../../townService/src/town/games/UnoGame';
 import { Card as UnoCardModel, Color, Value } from '../../../types/CoveyTownSocket';
 
 /**
@@ -37,7 +38,7 @@ import { Card as UnoCardModel, Color, Value } from '../../../types/CoveyTownSock
  *
  * It uses the UnoAreaController to get the current state of the game.
  * It listens for the 'gameUpdated' and 'gameEnd' events on the controller, and re-renders accordingly.
- * It subscribes to these events when the component mounts, and unsubscribes when the component unmounts. It also unsubscribes when the gameAreaController changes.
+ * It subscribes to these events when the component mounts, and unsubscribes when the component unmounts. It also unsubscribes when the unoAreaController changes.
  *
  * It renders the following:
  * - A list of players' usernames (in a list with the aria-label 'list of players in the game', one item for X and one for O)
@@ -46,7 +47,7 @@ import { Card as UnoCardModel, Color, Value } from '../../../types/CoveyTownSock
  *    - If the game is in progress, the message is 'Game in progress, currently {whoseTurn}'s turn'. If it is currently our player's turn, the message is 'Game in progress, currently your turn'
  *    - Otherwise the message is 'Game {not yet started | over}.'
  * - If the game is in status WAITING_TO_START or OVER, a button to join the game is displayed, with the text 'Join New Game'
- *    - Clicking the button calls the joinGame method on the gameAreaController
+ *    - Clicking the button calls the joinGame method on the unoAreaController
  *    - Before calling joinGame method, the button is disabled and has the property isLoading set to true, and is re-enabled when the method call completes
  *    - If the method call fails, a toast is displayed with the error message as the description of the toast (and status 'error')
  *    - Once the player joins the game, the button dissapears
@@ -57,20 +58,36 @@ import { Card as UnoCardModel, Color, Value } from '../../../types/CoveyTownSock
  *
  */
 function UnoArea({ interactableID }: { interactableID: InteractableID }): JSX.Element {
-  const gameAreaController = useInteractableAreaController<UnoAreaController>(interactableID);
+  const unoAreaController = useInteractableAreaController<UnoAreaController>(interactableID);
   const townController = useTownController();
-  const [gameStatus, setGameStatus] = useState<GameStatus>(gameAreaController.status);
-  const [observers, setObservers] = useState<PlayerController[]>(gameAreaController.observers);
+  const [gameStatus, setGameStatus] = useState<GameStatus>(unoAreaController.status);
+  const [observers, setObservers] = useState<PlayerController[]>(unoAreaController.observers);
   const [joiningGame, setJoiningGame] = useState(false);
+  const [isReady, setIsReady] = useState(false);
+
+  const handleReady = async () => {
+    setIsReady(true);
+    UnoGame.allPlayersReady;
+    await unoAreaController.EveryOneReady;
+  };
+
+  let readyButton = <></>;
+  if (gameStatus === 'WAITING_TO_START' && !isReady) {
+    readyButton = (
+      <Button onClick={handleReady}>
+        Ready
+      </Button>
+    );
+  }
   const toast = useToast();
   useEffect(() => {
     const updateGameState = () => {
-      setGameStatus(gameAreaController.status || 'WAITING_TO_START');
-      setObservers(gameAreaController.observers);
+      setGameStatus(unoAreaController.status || 'WAITING_TO_START');
+      setObservers(unoAreaController.observers);
     };
-    gameAreaController.addListener('gameUpdated', updateGameState);
+    unoAreaController.addListener('gameUpdated', updateGameState);
     const onGameEnd = () => {
-      const winner = gameAreaController.winner;
+      const winner = unoAreaController.winner;
       if (!winner) {
         toast({
           title: 'Game over',
@@ -91,28 +108,13 @@ function UnoArea({ interactableID }: { interactableID: InteractableID }): JSX.El
         });
       }
     };
-    gameAreaController.addListener('gameEnd', onGameEnd);
+    unoAreaController.addListener('gameEnd', onGameEnd);
     return () => {
-      gameAreaController.removeListener('gameEnd', onGameEnd);
-      gameAreaController.removeListener('gameUpdated', updateGameState);
+      unoAreaController.removeListener('gameEnd', onGameEnd);
+      unoAreaController.removeListener('gameUpdated', updateGameState);
     };
-  }, [townController, gameAreaController, toast]);
+  }, [townController, unoAreaController, toast]);
 
-  type Player = {
-    id: string;
-    name: string;
-    isReady: boolean;
-  };
-  const PlayerComponent = ({ player, onReady }: { player: Player; onReady: (id: string) => void }) => {
-    return (
-      <div>
-        <p>{player.name}</p>
-        <button onClick={() => onReady(player.id)} disabled={player.isReady}>
-          {player.isReady ? 'Ready!' : 'Ready?'}
-        </button>
-      </div>
-    );
-  };
 
   const [showGame, setShowGame] = useState(false);
   const [currentPlayer, setCurrentPlayer] = useState('Player 1');
@@ -127,24 +129,24 @@ function UnoArea({ interactableID }: { interactableID: InteractableID }): JSX.El
   if (gameStatus === 'IN_PROGRESS') {
     gameStatusText = (
       <>
-        {gameAreaController.whoseTurn === townController.ourPlayer
+        {unoAreaController.whoseTurn === townController.ourPlayer
           ? 'your'
-          : gameAreaController.whoseTurn?.userName + "'s"}{' '}
+          : unoAreaController.whoseTurn?.userName + "'s"}{' '}
         turn
       </>
     );
   } else {
     let joinGameButton = <></>;
     if (
-      (gameAreaController.status === 'WAITING_TO_START' && !gameAreaController.isPlayer) ||
-      gameAreaController.status === 'OVER'
+      (unoAreaController.status === 'WAITING_TO_START' && !unoAreaController.isPlayer) ||
+      unoAreaController.status === 'OVER'
     ) {
       joinGameButton = (
         <Button
           onClick={async () => {
             setJoiningGame(true);
             try {
-              await gameAreaController.joinGame();
+              await unoAreaController.joinGame();
             } catch (err) {
               toast({
                 title: 'Error joining game',
@@ -170,6 +172,8 @@ function UnoArea({ interactableID }: { interactableID: InteractableID }): JSX.El
   return (
     <Container maxWidth="80vw">
       {gameStatusText}
+      {readyButton}
+      {gameStatus === 'IN_PROGRESS' && (
       <Flex flexDirection='row' justify='center' align='center' width='80vw' mx='auto' marginTop='2rem' gap={5}>
         <div>
           {showGame ? (
@@ -182,6 +186,7 @@ function UnoArea({ interactableID }: { interactableID: InteractableID }): JSX.El
           )}
         </div>
       </Flex>
+      )}
     </Container>
   );
 }

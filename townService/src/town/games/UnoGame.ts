@@ -201,7 +201,7 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
   }
 
   public _join(player: UnoPlayer): void {
-    if (this._players.includes(player)) {
+    if (this._players.some(existingPlayer => existingPlayer.id === player.id)) {
       throw new Error(PLAYER_ALREADY_IN_GAME_MESSAGE);
     }
     if (this._players.length >= MAX_PLAYERS) {
