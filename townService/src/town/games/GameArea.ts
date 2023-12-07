@@ -5,8 +5,6 @@ import {
   GameResult,
   GameState,
   Interactable,
-  GameInstance,
-  UnoMove
 } from '../../types/CoveyTownSocket';
 import InteractableArea from '../InteractableArea';
 import Game from './Game';
@@ -50,9 +48,7 @@ export default abstract class GameArea<
   public remove(player: Player): void {
 
     if (this._game) {
-      const playerToRemove = this._game._players.find(unoPlayer => unoPlayer.id === player.id);
-      if(playerToRemove)
-        this._game.leave(playerToRemove);
+      this._game.leave(player);
     }
     super.remove(player);
   }

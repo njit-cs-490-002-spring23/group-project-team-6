@@ -20,14 +20,13 @@ import {
 } from '@chakra-ui/react';
 import React, { useCallback, useEffect, useState } from 'react';
 import UnoTable from './UnoTable';
-import TurnIndicator from './TurnIndicator';
 import UnoAreaController from '../../../classes/UnoAreaController';
 import PlayerController from '../../../classes/PlayerController';
 import { useInteractable, useInteractableAreaController } from '../../../classes/TownController';
 import useTownController from '../../../hooks/useTownController';
 import { GameResult, GameStatus, InteractableID } from '../../../types/CoveyTownSocket';
 import GameAreaInteractable from './GameArea';
-import { Card as UnoCardModel, Color, Value } from '../../../types/CoveyTownSocket';
+import { Card as UnoCardModel, Color, Value, PlayerHandsMap } from '../../../types/CoveyTownSocket';
 
 /**
  * The UnoArea component renders the Uno game area.
@@ -60,13 +59,16 @@ function UnoArea({ interactableID }: { interactableID: InteractableID }): JSX.El
   const gameAreaController = useInteractableAreaController<UnoAreaController>(interactableID);
   const townController = useTownController();
   const [gameStatus, setGameStatus] = useState<GameStatus>(gameAreaController.status);
-  const [observers, setObservers] = useState<PlayerController[]>(gameAreaController.observers);
   const [joiningGame, setJoiningGame] = useState(false);
+  const [players, setplayers] = useState<PlayerController[]>(gameAreaController.players);
+  const [whoseTurn, setWhoseTurn] = useState<PlayerController | undefined>(gameAreaController.whoseTurn);
+
   const toast = useToast();
   useEffect(() => {
     const updateGameState = () => {
       setGameStatus(gameAreaController.status || 'WAITING_TO_START');
-      setObservers(gameAreaController.observers);
+      setplayers(gameAreaController.players);
+      setWhoseTurn(gameAreaController.whoseTurn);
     };
     gameAreaController.addListener('gameUpdated', updateGameState);
     const onGameEnd = () => {
@@ -119,17 +121,15 @@ function UnoArea({ interactableID }: { interactableID: InteractableID }): JSX.El
 
   const startGame = () => {
     setShowGame(true);
-    // Additional logic to start the game can go here
-    // For example, determine the starting player
   };
 
   let gameStatusText = <></>;
   if (gameStatus === 'IN_PROGRESS') {
     gameStatusText = (
       <>
-        {gameAreaController.whoseTurn === townController.ourPlayer
+        {whoseTurn === townController.ourPlayer
           ? 'your'
-          : gameAreaController.whoseTurn?.userName + "'s"}{' '}
+          : whoseTurn?.userName + "'s"}{' '}
         turn
       </>
     );
@@ -145,6 +145,7 @@ function UnoArea({ interactableID }: { interactableID: InteractableID }): JSX.El
             setJoiningGame(true);
             try {
               await gameAreaController.joinGame();
+              startGame();
             } catch (err) {
               toast({
                 title: 'Error joining game',
@@ -170,15 +171,34 @@ function UnoArea({ interactableID }: { interactableID: InteractableID }): JSX.El
   return (
     <Container maxWidth="80vw">
       {gameStatusText}
-      <Flex flexDirection='row' justify='center' align='center' width='80vw' mx='auto' marginTop='2rem' gap={5}>
-        <div>
+      <Accordion allowToggle>
+        <AccordionItem>
+          <Heading as='h3'>
+            <AccordionButton>
+              <Box as='span' flex='1' textAlign='left'>
+                Current Players
+                <AccordionIcon />
+              </Box>
+            </AccordionButton>
+          </Heading>
+          <AccordionPanel>
+            <List aria-label='list of observers in the game'>
+              {players.map(player => {
+                // eslint-disable-next-line react/prop-types
+                return <ListItem key={player.id}>{player.userName}</ListItem>;
+              })}
+            </List>
+          </AccordionPanel>
+        </AccordionItem>
+      </Accordion>
+      <Flex flexDirection='row' justify='center' align='center' width='100%' mx='auto' marginTop='2rem' gap={5}>
+        <div style={{ width: '100%' }}>
           {showGame ? (
             <>
-              <UnoTable />
-              <TurnIndicator currentTurn={currentPlayer} />
+              <UnoTable interactableID={interactableID} />
             </>
           ) : (
-            <button onClick={startGame}>Start Game</button>
+            <p style={{ fontSize: '20px', fontWeight: 'bold' }}>Waiting Room</p>
           )}
         </div>
       </Flex>

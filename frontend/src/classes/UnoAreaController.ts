@@ -8,13 +8,15 @@ import {
   Color,
   Value,
   UnoMove,
-  PlayerID
+  PlayerID,
+  PlayerHands2DArray
 } from '../types/CoveyTownSocket';
 import Game from '../../../townService/src/town/games/Game'
 import PlayerController from './PlayerController';
 import GameAreaController, { GameEventTypes } from './GameAreaController';
 import TownController from './TownController';
 import UnoPlayer from '../../../townService/src/lib/UnoPlayer';
+import { UnoCard } from './UnoCards';
 
 
 
@@ -24,7 +26,8 @@ export const INVALID_CARD_PLAYED_ERROR = "Card can not be played";
 export const NO_GAME_IN_PROGRESS_ERROR = 'No game in progress';
 export const noCard: Card = {
   color: "None",
-  value: "None"
+  value: "None",
+  src: "",
 };
 
 export type UnoEvents = GameEventTypes & {
@@ -41,8 +44,6 @@ export default class UnoAreaController extends GameAreaController<UnoGameState, 
   private _currentCard: DeckOfCards = [];
 
   private _playerHands: DeckOfCards = [];
-
-  private _playersHands:Map<string,DeckOfCards> = new Map();
 
   /**
    * Returns the hand of the player.
@@ -67,6 +68,45 @@ public isActive(): boolean {
 }
 */
 
+get playersHands(): PlayerHands2DArray | undefined {
+  return this._model.game?.state.playersHands;
+}
+
+get UnoPlayers(): PlayerController[] {
+  if (this._model.game?.state)
+    return this.occupants.filter(occupant => this._model.game?.state.players.some(playerid => playerid === occupant.id));
+  else
+    return [];
+}
+
+get mostRecentMove(): UnoMove | undefined {
+  return this._model.game?.state.mostRecentMove;
+}
+
+get currentMovePlayer(): PlayerController | undefined {
+  return this.UnoPlayers.find(player => player.id === this._model.game?.state.currentMovePlayer);
+}
+
+get numberOfMovesSoFar(): number {
+  return this._model.game?.state.numberOfMovesSoFar || 0;
+}
+
+get currentColor(): Color | undefined {
+  return this._model.game?.state.currentColor;
+}
+
+get isOurTurn(): boolean {
+  return this.whoseTurn?.id === this._townController.ourPlayer.id || false;
+}
+
+get currentCardValue(): Value | undefined {
+  return this._model.game?.state.currentCardValue;
+}
+
+get direction(): string | undefined {
+  return this._model.game?.state.direction;
+}
+
 get status(): GameStatus {
   const status = this._model.game?.state.status;
   if(!status){
@@ -80,7 +120,14 @@ get EveryOneReady(): boolean {
 }
 
 get numberOfCardsInPlayerHand() : number | undefined {
-  return this._playersHands.get(this._townController.ourPlayer.id)?.length;
+  const index = this._players.findIndex((p) => p.id === this._townController.ourPlayer.id);
+  return this._model.game?.state.playersHands[index].length;
+}
+
+get ourHand(): Card[] { 
+  const index = this._players.findIndex((p) => p.id === this._townController.ourPlayer.id);
+  const playersHands: PlayerHands2DArray = this._model.game?.state.playersHands;
+  return playersHands[index];
 }
 
 get numberOfCardInDeck() : number {
@@ -96,7 +143,7 @@ get isPlayer(): boolean {
 
 
 get whoseTurn() : PlayerController | undefined {
-  return this.occupants.find(eachOccupant => eachOccupant.id === this._model.game?.state.currentMovePlayer.id);
+  return this.occupants.find(eachOccupant => eachOccupant.id === this._model.game?.state.currentMovePlayer) || undefined;
 }
 
 /*public _getNextPlayer(): PlayerController {
@@ -172,7 +219,6 @@ private _reshuffleDeck(): void {
    * Updates the game state based on the current state and the action taken by a player.
    */
 protected _updateFrom( newModel: GameArea<UnoGameState>): void {
-    const wasOurTurn: boolean = this.whoseTurn?.id === this._townController.ourPlayer.id;
     super._updateFrom(newModel);
     const newState = newModel.game;
     if(newState){
@@ -202,6 +248,20 @@ public checkForGameEnd(): void {
       return this.occupants.find(eachOccupant => eachOccupant.id === winner);
     }
     return undefined;
+  }
+
+  public async readyUp() {
+    const { gameID } = await this._townController.sendInteractableCommand(this.id, {
+      type: 'ReadyUp',
+    });
+    this._instanceID = gameID;
+  }
+
+  public async dealCards() {
+    const { gameID } = await this._townController.sendInteractableCommand(this.id, {
+      type: 'DealCards',
+    });
+    this._instanceID = gameID;
   }
 
 

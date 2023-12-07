@@ -17,8 +17,10 @@ import {
   Value,
   PlayerID,
   UnoGameDirection,
+  Direction,
 } from '../../types/CoveyTownSocket';
 import UnoPlayer from '../../lib/UnoPlayer';
+import Player from '../../lib/Player';
 
 const MAX_PLAYERS = 6;
 const MIN_PLAYERS = 2;
@@ -43,6 +45,8 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
       currentColor: 'None',
       currentCardValue: 'None',
       direction: 'Counter_Clockwise',
+      playersHands: [],
+      players: [],
     });
     this.deckOfCards = [];
     this.cardImages = [];
@@ -56,15 +60,21 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
   }
 
   set mostRecentMove(mostRecentMove: UnoMove | undefined) {
-    this.state.mostRecentMove = mostRecentMove;
+    this.state = {
+      ...this.state,
+      mostRecentMove,
+    };
   }
 
-  get currentMovePlayer(): UnoPlayer {
-    return this.state.currentMovePlayer;
+  get currentMovePlayer(): PlayerID {
+    return this.state.currentMovePlayer || "";
   }
 
-  set currentMovePlayer(currentMovePlayer: UnoPlayer) {
-    this.state.currentMovePlayer = currentMovePlayer;
+  set currentMovePlayer(currentMovePlayer: PlayerID) {
+    this.state = {
+      ...this.state,
+      currentMovePlayer,
+    };
   }
 
   get currentColor(): Color {
@@ -72,7 +82,10 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
   }
 
   set currentColor(currentColor: Color) {
-    this.state.currentColor = currentColor;
+    this.state = {
+      ...this.state,
+      currentColor,
+    };  
   }
 
   get numberOfMovesSoFar(): number {
@@ -80,7 +93,10 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
   }
 
   set numberOfMovesSoFar(numberOfMovesSoFar: number) {
-    this.state.numberOfMovesSoFar = numberOfMovesSoFar;
+    this.state = {
+      ...this.state,
+      numberOfMovesSoFar,
+    };   
   }
 
   get currentCardValue(): Value {
@@ -88,7 +104,10 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
   }
 
   set currentCardValue(currentCardValue: Value) {
-    this.state.currentCardValue = currentCardValue;
+    this.state = {
+      ...this.state,
+      currentCardValue,
+    };  
   }
 
   get direction(): UnoGameDirection {
@@ -96,42 +115,50 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
   }
 
   set direction(direction: UnoGameDirection) {
-    this.state.direction = direction;
+    this.state = {
+      ...this.state,
+      direction,
+    };  
   }
 
   // public methods to be used in game
 
+  // eslint-disable-next-line class-methods-use-this
   public playerReadyUp(player: UnoPlayer): void {
     player.readyUp = !player.readyUp;
-    let allPlayersReady = true;
-    for (let j = 0; j < this._players.length; j++) {
-      if (!this._players[j].readyUp) {
-        allPlayersReady = false;
-        break;
-      }
-    }
-    if (allPlayersReady) {
-      this._shuffleAndDealCards();
-    }
   }
 
   public get NextPlayerID(): PlayerID {
-    return this._getNextPlayer().id;
+    return this._getNextPlayer()?.id || "";
   }
 
   public _dealCards(): void {
     this._shuffleDeck();
     for (let i = 0; i < 7; i++) {
-      for (let j = 0; j < this._players.length; j++) {
-        this.drawFromDeck(this._players[j]);
+      for (let j = 0; j < this._unoPlayers.length; j++) {
+        this.drawFromDeck(this._unoPlayers[j]);
       }
     }
   }
 
   public drawFromDeck(player: UnoPlayer): void {
     let card = this.deckOfCards.pop();
+    const playersHandsArray = this.state.playersHands;
+    const index = this._players.findIndex((p) => p.id === player.id);
+    const cardList = playersHandsArray[index];
     if (card) {
       player.cardsInHand?.push(card);
+      if (cardList) {
+        cardList.push(card);
+        playersHandsArray[index] = cardList;
+        this.state = {
+          ...this.state,
+          playersHands: playersHandsArray,
+        }
+      }
+      else {
+        throw new InvalidParametersError(PLAYER_NOT_IN_GAME_MESSAGE);
+      }
       this.discardPile.push(card);
     } else if (this.discardPile) {
       this.deckOfCards = [...this.discardPile];
@@ -139,6 +166,14 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
       if (card) {
         player.cardsInHand?.push(card);
         this.discardPile.push(card);
+        if (cardList) {
+          cardList.push(card);
+          playersHandsArray[index] = cardList;
+          this.state = {
+            ...this.state,
+            playersHands: playersHandsArray,
+          }
+        }  
       } else {
         throw new InvalidParametersError(GAME_NOT_IN_PROGRESS_MESSAGE);
       }
@@ -148,7 +183,10 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
   }
 
   public updateColor(color: Color): void {
-    this.state.currentColor = color;
+    this.state = {
+      ...this.state,
+      currentColor: color,
+    };
   }
 
   public getCardImages(): string[] {
@@ -174,9 +212,14 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
    * @throws InvalidParametersError if the move is invalid (with specific message noted above)
    */
   public applyMove(move: GameMove<UnoMove>): void {
-    const [first] = this._players;
-    if (!this.state.currentMovePlayer) this.state.currentMovePlayer = first;
-    if (move.playerID !== this.state.currentMovePlayer.id) {
+    const [first] = this._players[0].id;
+    if (!this.state.currentMovePlayer || this.state.currentMovePlayer === "") {
+      this.state = {
+        ...this.state,
+        currentMovePlayer: first,
+      }; 
+    }
+    if (move.playerID !== this.state.currentMovePlayer) {
       throw new InvalidParametersError(NOT_YOUR_TURN_MESSAGE);
     }
     if (move.move.cardPlaced.value === 'Wild') this._wildCardPlaced(move.move);
@@ -201,15 +244,28 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
   }
 
   public _join(player: UnoPlayer): void {
-    if (this._players.includes(player)) {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    if (this._unoPlayers.some(existingPlayer => existingPlayer.id === player.id)) {
       throw new Error(PLAYER_ALREADY_IN_GAME_MESSAGE);
     }
-    if (this._players.length >= MAX_PLAYERS) {
+    if (this._unoPlayers.length >= MAX_PLAYERS) {
       throw new Error(GAME_FULL_MESSAGE);
     }
-    this._players.push(player);
+    this._unoPlayers.push(player);
+    const index = this._players.findIndex((p) => p.id === player.id);
+    const playersHandsArray: Card[][] = this.state.playersHands;
+    playersHandsArray[index] = [];
+    const playerIdList: PlayerID[] = this.state.players;
+    playerIdList.push(player.id);
+    this.state = {
+      ...this.state,
+      playersHands: playersHandsArray,
+      players: playerIdList,
+      status: 'WAITING_TO_START',
+    };
+    if (this._unoPlayers.length === 1)
+      this.state.currentMovePlayer = player.id; 
     this._updatePlayerPositions();
-    this.state.status = 'WAITING_TO_START';
   }
 
   public _leave(player: UnoPlayer): void {
@@ -219,31 +275,60 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
       throw new Error(PLAYER_NOT_IN_GAME_MESSAGE);
     }
     this._players.splice(playerIndex, 1);
-
+    this._unoPlayers.splice(playerIndex, 1);
+    const playersHandsArray: Card[][]= this.state.playersHands;
+    const playerIdList: PlayerID[] = this.state.players;
+    playerIdList.splice(playerIndex, 1);
+    playersHandsArray.splice(playerIndex, 1);
+    this.state = {
+      ...this.state,
+      playersHands: playersHandsArray,
+      players: playerIdList,
+    }; 
     this._updatePlayerPositions();
 
     if (this.state.status === 'IN_PROGRESS' && this._players.length < MIN_PLAYERS) {
-      this.state.status = 'OVER';
+      this.state = {
+        ...this.state,
+        status: 'OVER',
+      }; 
 
       if (this._players.length === 1) {
-        this.state.winner = this._players[0].id;
+        this.state = {
+          ...this.state,
+          winner: this._players[0].id,
+        }; 
       } else {
-        this.state.status = 'WAITING_TO_START';
-        this.state.winner = undefined;
+        this.state = {
+          ...this.state,
+          status: 'WAITING_TO_START',
+          winner: undefined,
+        };
       }
     }
   }
 
   // private methods used by class
 
-  private _shuffleAndDealCards(): boolean {
-    this.state.status = 'IN_PROGRESS';
-    this._createDeck();
-    this._shuffleDeck();
-    this._dealCards();
-    const [first] = this._players;
-    this.state.currentMovePlayer = first;
-    return true;
+  public shuffleAndDealCards(): boolean {
+    let allPlayersReady = true;
+    for (let j = 0; j < this._unoPlayers.length; j++) {
+      if (!this._unoPlayers[j].readyUp) {
+        allPlayersReady = false;
+        break;
+      }
+    }
+    if (allPlayersReady) {
+      this._createDeck();
+      this._shuffleDeck();
+      this._dealCards();
+      this.state = {
+        ...this.state,
+        status: 'IN_PROGRESS',
+      };
+      return true;
+    }
+    return false;
   }
 
   private _createDeck(): void {
@@ -295,14 +380,15 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
   }
 
   private _updatePlayerPositions(): void {
-    this._players.forEach((player, index, arr) => {
+    this._unoPlayers.forEach((player, index, arr) => {
       player.playerToLeft = arr[(index + arr.length - 1) % arr.length];
       player.playerToRight = arr[(index + 1) % arr.length];
     });
   }
 
   private _checkIfWinningMove(): void {
-    if (this.state.currentMovePlayer.cardsInHand.length === 0) {
+    const player: UnoPlayer | undefined = this._unoPlayers.find(_player => _player.id === this.state.currentMovePlayer);
+    if (player && player.cardsInHand.length === 0) {
       this.state = {
         ...this.state,
         status: 'OVER',
@@ -311,50 +397,96 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     }
   }
 
-  private _getNextPlayer(): UnoPlayer {
-    return this.state.direction === 'Counter_Clockwise'
-      ? this.state.currentMovePlayer.playerToRight
-      : this.state.currentMovePlayer.playerToLeft;
+  private _getNextPlayer(): UnoPlayer | undefined {
+    const player: UnoPlayer | undefined = this._unoPlayers.find(_player => _player.id === this.state.currentMovePlayer);
+    if (player && player.playerToRight && player.playerToLeft){
+      return this.state.direction === 'Counter_Clockwise'
+      ? player.playerToRight
+      : player.playerToLeft;
+    }
+      throw new InvalidParametersError(PLAYER_NOT_IN_GAME_MESSAGE);
   }
 
-  private _applyMoveUpdateGameState(move: UnoMove) {
-    this.state.currentMovePlayer.cardsInHand = this.state.currentMovePlayer.cardsInHand.filter(
-      (card: Card) => card !== move.cardPlaced,
-    );
-    this.state.mostRecentMove = move;
-    this.state.currentCardValue = move.cardPlaced.value;
+  private _applyMoveUpdateGameState(move: UnoMove): void {
+    const player: UnoPlayer | undefined = this._unoPlayers.find(_player => _player.id === this.state.currentMovePlayer);
+    if (player){
+      const index = this._players.findIndex((p) => p.id === player.id);
+      let cardList: Card[] | undefined;
+      if (this.state.currentMovePlayer){
+        cardList = this.state.playersHands[index];
+        cardList = cardList?.filter((card: Card) => card !== move.cardPlaced);
+        const playersHandsArray: Card[][] = this.state.playersHands;
+        playersHandsArray[index] = cardList || [];
+        this.state = {
+          ...this.state,
+          playersHands: playersHandsArray,
+          mostRecentMove: move,
+          currentCardValue: move.cardPlaced.value
+        }
+        player.cardsInHand = player.cardsInHand.filter(
+          (card: Card) => card !== move.cardPlaced,
+        );  
+      }
+    }
     this._checkIfWinningMove();
-    this.state.currentMovePlayer = this._getNextPlayer();
+    this.state = {
+      ...this.state,
+      currentMovePlayer: this._getNextPlayer()?.id,
+    }
   }
 
   private _wildCardPlaced(move: UnoMove): void {
-    this.state.currentColor = move.cardPlaced.color;
+    this.state = {
+      ...this.state,
+      currentColor: move.cardPlaced.color,
+    }
     this._applyMoveUpdateGameState(move);
   }
 
   private _wildDrawfourCardPlaced(move: UnoMove): void {
-    for (let i = 0; i < 4; i++) {
-      this.drawFromDeck(this._getNextPlayer());
+    const player = this._getNextPlayer();
+    if (player){
+      for (let i = 0; i < 4; i++) {
+        this.drawFromDeck(player);
+      }
+      this._applyMoveUpdateGameState(move);
+      this.state = {
+        ...this.state,
+        currentMovePlayer: player.id,
+      }
     }
-    this._applyMoveUpdateGameState(move);
-    this.state.currentMovePlayer = this._getNextPlayer();
   }
 
   private _drawtwoCardPlaced(move: UnoMove): void {
-    for (let i = 0; i < 2; i++) {
-      this.drawFromDeck(this._getNextPlayer());
+    const player = this._getNextPlayer();
+    if (player) {
+      for (let i = 0; i < 2; i++) {
+        this.drawFromDeck(player);
+      }
+      this._applyMoveUpdateGameState(move);
+      this.state = {
+        ...this.state,
+        currentMovePlayer: player.id,
+      }  
     }
-    this._applyMoveUpdateGameState(move);
-    this.state.currentMovePlayer = this._getNextPlayer();
   }
 
   private _skipCardPlaced(move: UnoMove): void {
     this._applyMoveUpdateGameState(move);
-    this.state.currentMovePlayer = this._getNextPlayer();
+    const player = this._getNextPlayer();
+    if (player)
+      this.state = {
+        ...this.state,
+        currentMovePlayer: player.id,
+    }
   }
 
   private _reverseCardPlaced(move: UnoMove): void {
-    this.state.direction = this.state.direction === 'Clockwise' ? 'Counter_Clockwise' : 'Clockwise';
+    const direction: UnoGameDirection = this.state.direction === 'Clockwise' ? 'Counter_Clockwise' : 'Clockwise';
+    this.state = {
+      ...this.state,
+      direction,
+    }
     this._applyMoveUpdateGameState(move);
   }
 

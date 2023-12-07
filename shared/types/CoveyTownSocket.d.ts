@@ -59,6 +59,8 @@ export interface Interactable {
 
 export type InteractableID = string;
 
+export type PlayerHands2DArray = Card[][];
+
 export interface GameState{
   status: GameStatus;
 }
@@ -66,11 +68,13 @@ export interface GameState{
 export interface UnoGameState extends GameState{
   winner?: PlayerID;
   mostRecentMove?: UnoMove;
-  currentMovePlayer?: UnoPlayer;
+  currentMovePlayer?: PlayerID;
   currentColor: Color;
   numberOfMovesSoFar: number;
   currentCardValue: Value;
   direction: UnoGameDirection;
+  playersHands: playerHands2DArray;
+  players: PlayerID[];
 }
 
 export type UnoGameDirection = 'Clockwise' | 'Counter_Clockwise'
@@ -185,7 +189,8 @@ export type InteractableCommand =
   JoinGameCommand | 
   GameMoveCommand<UnoMove> | 
   LeaveGameCommand |
-  DrawFromDeck;
+  DrawFromDeck |
+  DealCardsCommand;
 
 export type InteractableCommandReturnType<CommandType extends InteractableCommand> = 
   CommandType extends JoinGameCommand ? { gameID: string}:
@@ -195,6 +200,7 @@ export type InteractableCommandReturnType<CommandType extends InteractableComman
   CommandType extends ReadyUpCommand ? undefined :
   CommandType extends GameMoveCommand<TicTacToeMove> ? undefined :
   CommandType extends LeaveGameCommand ? undefined :
+  CommandType extends DealCardsCommand ? undefined :
   never;
 
   export interface JoinGameCommand {
@@ -203,6 +209,9 @@ export type InteractableCommandReturnType<CommandType extends InteractableComman
   export interface ViewingAreaUpdateCommand  {
     type: 'ViewingAreaUpdate';
     update: ViewingArea;
+  }
+  export interface DealCardsCommand {
+    type: 'DealCards';
   }
   export interface ChangeColorCommand  {
     type: 'ChangeColor';

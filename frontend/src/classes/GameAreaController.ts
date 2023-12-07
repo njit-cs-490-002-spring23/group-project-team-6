@@ -56,6 +56,10 @@ export default abstract class GameAreaController<
     return this.occupants.filter(eachOccupant => !this._players.includes(eachOccupant));
   }
 
+  public set observers(p: PlayerController) {
+    this.occupants = this.occupants.filter(eachOccupant => !this._players.includes(eachOccupant));
+  }
+
   /**
    * Sends a request to the server to join the current game in the game area, or create a new one if there is no game in progress.
    *

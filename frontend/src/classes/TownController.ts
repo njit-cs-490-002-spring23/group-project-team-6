@@ -426,12 +426,16 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
      */
     this._socket.on('interactableUpdate', interactable => {
       try {
+        console.log("00000000000000000000");
         const controller = this._interactableControllers.find(c => c.id === interactable.id);
         if (controller) {
+          console.log("01010101010101010101");
           const activeBefore = controller.isActive();
           controller.updateFrom(interactable, this._playersByIDs(interactable.occupants));
           const activeNow = controller.isActive();
+          console.log("111111111111111111");
           if (activeBefore !== activeNow) {
+            console.log("222222222222222222");
             this.emit('interactableAreasChanged');
           }
         }
