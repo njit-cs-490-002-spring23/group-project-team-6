@@ -257,16 +257,16 @@ protected _updateFrom( newModel: GameArea<UnoGameState>): void {
 public async makeMove( action: UnoMove): Promise<void> {
   const instanceID = this._instanceID;
   if (instanceID){
+    if (action.cardPlaced.value === "Wild" || action.cardPlaced.value === "Wild Draw Four"){
+      this.colorChange = true;
+      this.justPlayedPlayerID = this._townController.ourPlayer.id;
+    }
     await this._townController.sendInteractableCommand(this.id,
       {
         type: 'GameMove',
         gameID: instanceID,
         move : action,
       })
-    if (action.cardPlaced.value === "Wild" || action.cardPlaced.value === "Wild Draw Four"){
-      this.colorChange = true;
-      this.justPlayedPlayerID = this._townController.ourPlayer.id;
-    }
   }
 }
 
