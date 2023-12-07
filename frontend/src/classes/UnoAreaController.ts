@@ -11,7 +11,8 @@ import {
   PlayerID,
   PlayerHands2DArray
 } from '../types/CoveyTownSocket';
-import Game from '../../../townService/src/town/games/Game'
+import {BASE_PATH, CARD_BACK_IMAGE} from '../components/Town/interactables/UnoTable';
+import Game from '../../../townService/src/town/games/Game';
 import PlayerController from './PlayerController';
 import GameAreaController, { GameEventTypes } from './GameAreaController';
 import TownController from './TownController';
@@ -44,6 +45,10 @@ export default class UnoAreaController extends GameAreaController<UnoGameState, 
   private _currentCard: DeckOfCards = [];
 
   private _playerHands: DeckOfCards = [];
+
+  public colorChange = false;
+
+  public justPlayedPlayerID: PlayerID = "";
 
   /**
    * Returns the hand of the player.
@@ -146,6 +151,37 @@ get whoseTurn() : PlayerController | undefined {
   return this.occupants.find(eachOccupant => eachOccupant.id === this._model.game?.state.currentMovePlayer) || undefined;
 }
 
+get currentImageSrc() : string {
+  return this.getImageSrc(this.currentColor || "None", this.currentCardValue || "None");
+}
+
+getImageSrc(color: Color, value: Value): string {
+  const lowercasedColor = color.toLowerCase();
+  switch (value) {
+    case "None":
+      return CARD_BACK_IMAGE;
+
+    case "Draw Two":
+      return `${BASE_PATH}/${lowercasedColor}_picker.png`;
+
+    case "Reverse":
+      return `${BASE_PATH}/${lowercasedColor}_reverse.png`;
+
+    case "Skip":
+      return `${BASE_PATH}/${lowercasedColor}_skip.png`;
+
+    case "Wild":
+      return `${BASE_PATH}/wild_color_changer.png`;
+
+    case "Wild Draw Four":
+      return `${BASE_PATH}/wild_pick_four.png`;
+
+    default:
+      return `${BASE_PATH}/${lowercasedColor}_${value}.png`;
+  }
+}
+
+
 /*public _getNextPlayer(): PlayerController {
   if(this._model.game?.state.direction === 'Clockwise')
   {
@@ -170,50 +206,6 @@ private _playCard(player: PlayerController, card: Card): void {
 }
 
 
-private _drawCard(player: PlayerController): void {
-  // Draw a card from the deck
-  const drawnCard = this._deck.pop();
-  if (!drawnCard) {
-    // If the deck is empty, reshuffle the discard pile into the deck
-    this._reshuffleDeck();
-    // drawnCard = this._deck.pop();
-  }
-
-  if (!drawnCard) {
-    throw new Error("No cards left to draw");
-  }
-
-  // Add the card to the player's hand
-  const playerHand = this._playerHands;
-  if (playerHand) {
-    playerHand.push(drawnCard);
-  } else {
-    throw new Error("Player hand not found");
-  }
-}
-
-private _applyCardEffects(card: Card): void {
-  switch(card.value){
-    case 'Draw Two':
-      break;
-    case 'Skip':
-      break;
-    case 'Wild Draw Four':
-      break;
-    case 'Reverse':
-      break;
-    case 'Wild':
-      break;
-    default:
-      throw new Error(`Unknown action type: ${card.value}`);
-  }
-}
-
-private _reshuffleDeck(): void {
-  // Logic to reshuffle the discard pile back into the deck
-}
-
-  
 
   /**
    * Updates the game state based on the current state and the action taken by a player.
@@ -232,16 +224,6 @@ protected _updateFrom( newModel: GameArea<UnoGameState>): void {
     }
   }
 
-  /**
-   * Determines if the game has ended and who the winner is.
-   */
-public checkForGameEnd(): void {
-    // Implement the logic to determine game end and winner
-  }
-
-  /**
-   * Returns the winner of the game, if there is one
-   */
   get winner(): PlayerController | undefined {
     const winner = this._model.game?.state.winner;
     if (winner) {
@@ -257,12 +239,16 @@ public checkForGameEnd(): void {
     this._instanceID = gameID;
   }
 
-  public async dealCards() {
+  public async changeColor(color: Color) {
     const { gameID } = await this._townController.sendInteractableCommand(this.id, {
-      type: 'DealCards',
+      type: 'ChangeColor',
+      color: color,
     });
     this._instanceID = gameID;
+    this.colorChange = false;
+    this.justPlayedPlayerID = "";
   }
+
 
 
   /**
@@ -270,23 +256,34 @@ public checkForGameEnd(): void {
    */
 public async makeMove( action: UnoMove): Promise<void> {
   const instanceID = this._instanceID;
-  if (!instanceID || this._model.game?.state.status !== 'IN_PROGRESS') {
-    throw new Error(NO_GAME_IN_PROGRESS_ERROR);
+  if (instanceID){
+    await this._townController.sendInteractableCommand(this.id,
+      {
+        type: 'GameMove',
+        gameID: instanceID,
+        move : action,
+      })
+    if (action.cardPlaced.value === "Wild" || action.cardPlaced.value === "Wild Draw Four"){
+      this.colorChange = true;
+      this.justPlayedPlayerID = this._townController.ourPlayer.id;
+    }
   }
-  await this._townController.sendInteractableCommand(this.id,
+}
+
+public async drawCard() {
+  const { gameID } =  await this._townController.sendInteractableCommand(this.id,
     {
-      type: 'GameMove',
-      gameID: instanceID,
-      move : action
+      type: 'DrawFromDeck',
     })
-    
-}
-
-  // Additional methods can be added here for more complex game logic,
-  // such as dealing cards, handling special cards, etc.
-private _endGame(player: PlayerController) : void {
-    console.log(`The player ${player.userName} win!`);
+    this._instanceID = gameID;
 }
 
 
+public async dealCards() {
+  const { gameID } =  await this._townController.sendInteractableCommand(this.id,
+    {
+      type: 'DealCards',
+    })
+    this._instanceID = gameID;
+}
 }

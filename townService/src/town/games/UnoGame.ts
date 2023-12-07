@@ -227,6 +227,7 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
       this._wildDrawfourCardPlaced(move.move);
     else if (
       this.state.currentColor === move.move.cardPlaced.color ||
+      this.state.currentCardValue === move.move.cardPlaced.value ||
       this.state.currentColor === 'None' ||
       this.state.currentCardValue === 'None'
     ) {
@@ -284,7 +285,11 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
       ...this.state,
       playersHands: playersHandsArray,
       players: playerIdList,
-    }; 
+    };
+    this.state = {
+      ...this.state,
+      currentMovePlayer: this._getNextPlayer()?.id,
+    }
     this._updatePlayerPositions();
 
     if (this.state.status === 'IN_PROGRESS' && this._players.length < MIN_PLAYERS) {
@@ -326,6 +331,11 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
         ...this.state,
         status: 'IN_PROGRESS',
       };
+      for (const playerHand of this.state.playersHands) {
+        for (const card of playerHand) {
+          console.log(`Color: ${card.color}, Value: ${card.value}`);
+        }
+      }
       return true;
     }
     return false;
@@ -362,7 +372,9 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     };
     colors.forEach(color => {
       values.forEach(value => {
-        const src = createSrc(color, value);
+        let src = createSrc(color, value);
+        if (value === 'Draw Two')
+          src = `/assets/images/uno_assets_2d/PNGs/small/${color.toLowerCase()}_picker.png`;
         for (let i = 0; i < 4; i++) {
           this.deckOfCards.push({ color, value, src });
           this.cardImages.push(src);
@@ -410,11 +422,16 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
   private _applyMoveUpdateGameState(move: UnoMove): void {
     const player: UnoPlayer | undefined = this._unoPlayers.find(_player => _player.id === this.state.currentMovePlayer);
     if (player){
-      const index = this._players.findIndex((p) => p.id === player.id);
       let cardList: Card[] | undefined;
+      const index = this._players.findIndex((p) => p.id === player.id);
       if (this.state.currentMovePlayer){
         cardList = this.state.playersHands[index];
-        cardList = cardList?.filter((card: Card) => card !== move.cardPlaced);
+        if (cardList){
+          const indexToRemove = cardList.findIndex((card) => card.color === move.cardPlaced.color && card.value === move.cardPlaced.value);
+          if (indexToRemove !== -1) {
+            cardList.splice(indexToRemove, 1);
+          }
+        }
         const playersHandsArray: Card[][] = this.state.playersHands;
         playersHandsArray[index] = cardList || [];
         this.state = {
@@ -423,9 +440,13 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
           mostRecentMove: move,
           currentCardValue: move.cardPlaced.value
         }
-        player.cardsInHand = player.cardsInHand.filter(
-          (card: Card) => card !== move.cardPlaced,
-        );  
+        const indexToRemove = player.cardsInHand.findIndex((card) => card.color === move.cardPlaced.color && card.value === move.cardPlaced.value);
+        player.cardsInHand.splice(indexToRemove, 1);
+        for (const playerHand of this.state.playersHands) {
+          for (const card of playerHand) {
+            console.log(`Color: ${card.color}, Value: ${card.value}`);
+          }
+        }  
       }
     }
     this._checkIfWinningMove();
@@ -452,7 +473,7 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
       this._applyMoveUpdateGameState(move);
       this.state = {
         ...this.state,
-        currentMovePlayer: player.id,
+        currentMovePlayer: this._getNextPlayer()?.id,
       }
     }
   }
@@ -466,7 +487,7 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
       this._applyMoveUpdateGameState(move);
       this.state = {
         ...this.state,
-        currentMovePlayer: player.id,
+        currentMovePlayer: this._getNextPlayer()?.id,
       }  
     }
   }
@@ -477,8 +498,8 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     if (player)
       this.state = {
         ...this.state,
-        currentMovePlayer: player.id,
-    }
+        currentMovePlayer: this._getNextPlayer()?.id,
+      }
   }
 
   private _reverseCardPlaced(move: UnoMove): void {

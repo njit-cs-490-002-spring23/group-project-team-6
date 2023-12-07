@@ -16,16 +16,6 @@ type UnoTableProps = {
 
 export const BASE_PATH = '/assets/images/uno_assets_2d/PNGs/small';
 export const CARD_BACK_IMAGE = '/assets/images/uno_assets_2d/PNGs/small/card_back.png';
-// A helper function to create the initial deck
-const createDeck = () => {
-  return [
-    { id: 1, color: 'blue', value: '0', src: `${BASE_PATH}/blue_0.png` },
-    { id: 2, color: 'green', value: '9', src: `${BASE_PATH}/green_9.png` },
-    { id: 3, color: 'red', value: '7', src: `${BASE_PATH}/red_7.png` },
-    { id: 4, color: 'yellow', value: '2', src: `${BASE_PATH}/yellow_2.png` },
-  ];
-};
-
 
 const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = ({ children, interactableID }) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -45,6 +35,8 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
     {color: currentColor || "None", value: currentCardValue || "None", src: gameAreaController.currentImageSrc},
     {color: 'None',                 value: 'None',                     src: CARD_BACK_IMAGE}, // Face down card
   ]);
+  const [colorChange, setColorChange] = useState(gameAreaController.colorChange);
+  const [justPlayedPlayerID, setjustPlayedPlayerID] = useState(gameAreaController.justPlayedPlayerID);
 
   const toast = useToast();
   useEffect(() => {
@@ -63,6 +55,8 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
         {color: currentColor || "None", value: currentCardValue || "None", src: gameAreaController.currentImageSrc},
         {color: 'None',                 value: 'None',                     src: CARD_BACK_IMAGE}, // Face down card
       ]));
+      setColorChange(gameAreaController.colorChange);
+      setjustPlayedPlayerID(gameAreaController.justPlayedPlayerID);
     };
     gameAreaController.addListener('gameUpdated', updateGameState);
     return () => {
@@ -71,26 +65,29 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
   }, [townController, gameAreaController, toast]);
 
   const playerHandComponentButtons = (listOfCards: Card[]) => {
-    const imageStyle = {
+    const buttonStyle = {
       width: '100%', // Adjust the width as needed
       height: '100%', // Adjust the height as needed
-      backgroundColor: 'red',
+      backgroundColor: 'white',
+      margin: 0,
+      padding: 0,
     };
   
     return (
-      <div className="player-hand" style={{ display: 'flex', justifyContent: 'space-evenly', padding: '0px',width: '45%', height: 'auto' }}>
+      <div className="player-hand" style={{ display: 'flex', justifyContent: 'flex-start', padding: '0px',width: '45%', height: 'auto' }}>
         {listOfCards.map((card : Card) => (
           <Button
             key={card.src}
-            style={imageStyle} 
+            style={buttonStyle} 
             className="card-button" 
+            disabled={!isOurTurn}
             onClick={async () => {
               const move: UnoMove = {cardPlaced: card};
               try { 
                 await gameAreaController.makeMove(move);
               } catch (e) {
                 toast ({
-                  title: "Not Working D:",
+                  title: "Error Making Move",
                   description: (e as Error).toString(),
                   status: 'error',
                 });
@@ -107,25 +104,64 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
     );
   };
 
-  const playerHandComponent = (listOfCards: Card[]) => {
-    const imageStyle = {
-      width: '90%', // Adjust the width as needed
-      height: '90%', // Adjust the height as needed
+  const tableCardsComponent = (_tableCards: Card[]) => {
+    const buttonStyle = {
+      width: '100%', // Adjust the width as needed
+      height: '100%', // Adjust the height as needed
+      backgroundColor: 'white',
+      margin: 0,
+      padding: 0,
     };
   
     return (
-      <div className="player-hand" style={{ display: 'flex', justifyContent: 'space-around', padding: '1px',width: '50%', height: 'auto' }}>
-        {listOfCards.map((card : Card) => (
+      <div className="player-hand" style={{ display: 'flex', justifyContent: 'flex-start', padding: '0px',width: '45%', height: 'auto' }}>
+        <Image
+          src={_tableCards[0].src}  
+          alt={_tableCards[0].color} 
+          style={{ width: '100%', height: '100%' }} 
+        />
+        <Button
+          key={_tableCards[1].src}
+          style={buttonStyle} 
+          className="card-button"
+          disabled={!isOurTurn || colorChange} 
+          onClick={async () => {
+            try { 
+              await gameAreaController.drawCard();
+            } catch (e) {
+              toast ({
+                title: "Error Drawing Card",
+                description: (e as Error).toString(),
+                status: 'error',
+              });
+            }
+          }}>
           <Image
-            key={card.src}
-            src={card.src}  
-            alt={card.color} 
-            style={imageStyle} 
-            ></Image>
-        ))}
+            src={_tableCards[1].src}  
+            alt={_tableCards[1].color} 
+            style={{ width: '100%', height: '100%' }} 
+          />
+          </Button>
       </div>
     );
-  };  
+  };
+
+  const colorSquareComponent = () => {
+    const colors = ['yellow', 'blue', 'red', 'green'];
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', position: 'relative', width: '200px', height: '200px' }}>
+        <div style={{ flex: 1, display: 'flex' }}>
+          <div style={{ flex: 1, backgroundColor: colors[0] }} onClick={() => gameAreaController.changeColor('Yellow')}></div>
+          <div style={{ flex: 1, backgroundColor: colors[1] }} onClick={() => gameAreaController.changeColor('Blue')}></div>
+        </div>
+        <div style={{ flex: 1, display: 'flex' }}>
+          <div style={{ flex: 1, backgroundColor: colors[2] }} onClick={() => gameAreaController.changeColor('Red')}></div>
+          <div style={{ flex: 1, backgroundColor: colors[3] }} onClick={() => gameAreaController.changeColor('Green')}></div>
+        </div>
+      </div>
+    );
+  };
 
   const [otherPlayersHands] = useState<Array<UnoCard[]>>(new Array(3).fill(new Array(4).fill({ src: CARD_BACK_IMAGE })));
   const tableStyle: React.CSSProperties = {
@@ -164,48 +200,19 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
     transform: 'rotate(90deg)', // Rotate the hand to align with the table's curve
   };
   const cardSize = '30px'; // For example, '50px' for smaller cards
-    if (gameStatus === 'IN_PROGRESS' && isOurTurn) {
+    if (gameStatus === 'IN_PROGRESS') {
     return (
       <Flex direction="column" align="center" style={tableStyle}>
         <Flex style={deckStyle}>
-          {playerHandComponent(tableCards)};
+        {
+         justPlayedPlayerID === townController.ourPlayer.id &&
+         colorChange ? 
+         colorSquareComponent() : tableCardsComponent(tableCards)
+        }
         </Flex>
 
         <Flex style={{...playerHandStyle, bottom: '10%'}} justify="center">
           {playerHandComponentButtons(ourHand)}
-        </Flex>
-
-        <Flex style={{...playerHandStyle, top: '35%'}} justify="center">
-          {otherPlayersHands[0].map((card, cardIndex) => (
-            <Image key={cardIndex} src={card.src} boxSize={cardSize}/>
-          ))}
-        </Flex>
-
-        {/* Left hand */}
-        <Flex style={leftHandStyle} justify="center" wrap="wrap">
-          {otherPlayersHands[1].map((card, cardIndex) => (
-            <Image key={cardIndex} src={card.src} boxSize={cardSize}/>
-          ))}
-        </Flex>
-
-        {/* Right hand */}
-        <Flex style={rightHandStyle} justify="center" wrap="wrap">
-          {otherPlayersHands[2].map((card, cardIndex) => (
-            <Image key={cardIndex} src={card.src} boxSize={cardSize}/>
-          ))}
-        </Flex>
-      </Flex>
-    );
-  }
-  else if (gameStatus === 'IN_PROGRESS' && !isOurTurn){
-    return (
-      <Flex direction="column" align="center" style={tableStyle}>
-        <Flex style={deckStyle}>
-          {playerHandComponent(tableCards)};
-        </Flex>
-
-        <Flex style={{...playerHandStyle, bottom: '10%'}} justify="center">
-          {playerHandComponent(ourHand)}
         </Flex>
 
         <Flex style={{...playerHandStyle, top: '35%'}} justify="center">
