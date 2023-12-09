@@ -9,7 +9,7 @@ import UnoPlayer from '../../lib/UnoPlayer';
     GameInstance,
     InteractableCommand,
     InteractableCommandReturnType,
-    Interactable,
+    InteractableType,
     UnoGameState,
   } from '../../types/CoveyTownSocket';
   import GameArea from './GameArea';
@@ -22,11 +22,12 @@ import UnoPlayer from '../../lib/UnoPlayer';
  */
 export default class UnoArea extends GameArea<UnoGame> {
   // eslint-disable-next-line class-methods-use-this
-  protected getType(): Interactable {
+  protected getType(): InteractableType {
     return 'UnoArea';
   }
 
   private _stateUpdated(updatedState: GameInstance<UnoGameState>) {
+    console.log("this._stateUpdated called");
     if (updatedState.state.status === 'OVER') {
       const game = this._game;
       if (game === undefined)
@@ -48,6 +49,7 @@ export default class UnoArea extends GameArea<UnoGame> {
         });
     }
     this._emitAreaChanged();
+    console.log("this._emitAreaChanged(); returned");
   }
 
 
@@ -101,9 +103,7 @@ export default class UnoArea extends GameArea<UnoGame> {
         game = new UnoGame();
         this._game = game;
       }
-
-      const unoPlayer: UnoPlayer = new UnoPlayer(player);
-      game.join(unoPlayer);
+      game.join(player);
       this._stateUpdated(game.toModel());
       return { gameID: game.id } as InteractableCommandReturnType<CommandType>;
     }
@@ -115,13 +115,9 @@ export default class UnoArea extends GameArea<UnoGame> {
       if (this._game?.id !== command.gameID) {
         throw new InvalidParametersError(GAME_ID_MISSMATCH_MESSAGE);
       }
-      const currentUnoPlayer: UnoPlayer | undefined = game._players.find(unoPlayer => unoPlayer.id === player.id);
-      if (currentUnoPlayer === undefined){
-        throw new InvalidParametersError(INVALID_COMMAND_MESSAGE);
-      }
-      game.leave(currentUnoPlayer);
+      game.leave(player);
       this._stateUpdated(game.toModel());
-      return undefined as InteractableCommandReturnType<CommandType>;
+      return { gameID: game.id } as InteractableCommandReturnType<CommandType>;
     }
     if (command.type === 'ChangeColor') {
       const game = this._game;
@@ -130,35 +126,47 @@ export default class UnoArea extends GameArea<UnoGame> {
       }
       game.updateColor(command.color);
       this._stateUpdated(game.toModel());
-      return undefined as InteractableCommandReturnType<CommandType>;
+      return { gameID: game.id } as InteractableCommandReturnType<CommandType>;
     }
     if (command.type === 'ReadyUp') {
       const game = this._game;
       if (!game) {
         throw new InvalidParametersError(GAME_NOT_IN_PROGRESS_MESSAGE);
       }
-      const currentUnoPlayer: UnoPlayer | undefined = game._players.find(unoPlayer => unoPlayer.id === player.id);
+      const currentUnoPlayer: UnoPlayer | undefined = game._unoPlayers.find(unoPlayer => unoPlayer.id === player.id);
       if (currentUnoPlayer === undefined){
         throw new InvalidParametersError(INVALID_COMMAND_MESSAGE);
       }
       game.playerReadyUp(currentUnoPlayer);
       this._stateUpdated(game.toModel());
-      return undefined as InteractableCommandReturnType<CommandType>;
+      return { gameID: game.id } as InteractableCommandReturnType<CommandType>;
     }
     if (command.type === 'DrawFromDeck'){
       const game = this._game;
       if (!game) {
         throw new InvalidParametersError(GAME_NOT_IN_PROGRESS_MESSAGE);
       }
-      const currentUnoPlayer: UnoPlayer | undefined = game._players.find(unoPlayer => unoPlayer.id === player.id);
+      const currentUnoPlayer: UnoPlayer | undefined = game._unoPlayers.find(unoPlayer => unoPlayer.id === player.id);
       if (currentUnoPlayer === undefined){
         throw new InvalidParametersError(INVALID_COMMAND_MESSAGE);
       }
       game.drawFromDeck(currentUnoPlayer);
       this._stateUpdated(game.toModel());
-      return undefined as InteractableCommandReturnType<CommandType>;
+      return { gameID: game.id } as InteractableCommandReturnType<CommandType>;
     }
+    if (command.type === 'DealCards'){
+      const game = this._game;
+      if (!game) {
+        throw new InvalidParametersError(GAME_NOT_IN_PROGRESS_MESSAGE);
+      }
+      console.log("game.shuffleAndDealCards(); Calling now");
+      game.shuffleAndDealCards();
+      console.log("game.shuffleAndDealCards(); returned");
+      this._stateUpdated(game.toModel());
+      console.log("this._stateUpdated(game.toModel()); returned");
+      return { gameID: game.id } as InteractableCommandReturnType<CommandType>;
+    }
+    
   throw new InvalidParametersError(INVALID_COMMAND_MESSAGE);
   }
 }
-  
