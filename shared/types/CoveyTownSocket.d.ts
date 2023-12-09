@@ -49,17 +49,7 @@ export interface GameResult {
 
 export type GameStatus = 'IN_PROGRESS' | 'WAITING_TO_START' | 'OVER';
 
-export type InteractableType = ConversationArea | ViewingArea | UnoArea;
-
-export interface Interactable {
-  type: InteractableType;
-  id: InteractableID;
-  occupants: PlayerID[];
-}
-
-export type InteractableID = string;
-
-export type PlayerHands2DArray = Card[][];
+export type Interactable = ConversationArea | ViewingArea | UnoArea;
 
 export interface GameState{
   status: GameStatus;
@@ -68,13 +58,11 @@ export interface GameState{
 export interface UnoGameState extends GameState{
   winner?: PlayerID;
   mostRecentMove?: UnoMove;
-  currentMovePlayer?: PlayerID;
+  currentMovePlayer?: UnoPlayer;
   currentColor: Color;
   numberOfMovesSoFar: number;
   currentCardValue: Value;
   direction: UnoGameDirection;
-  playersHands: playerHands2DArray;
-  players: PlayerID[];
 }
 
 export type UnoGameDirection = 'Clockwise' | 'Counter_Clockwise'
@@ -108,7 +96,6 @@ export type Value =
 export interface Card {
   color: Color;
   value: Value;
-  src: string;
 }
 
 export type DeckOfCards = Card[];
@@ -137,10 +124,11 @@ export interface GameArea<T extends GameState> extends Interactable {
   game: GameInstance<T> | undefined;
   history: GameResult[];
 }
-export interface ConversationArea extends Interactable {
+export interface ConversationArea {
+  id: string;
   topic?: string;
+  occupantsByID: string[];
 };
-
 export interface BoundingBox {
   x: number;
   y: number;
@@ -148,38 +136,11 @@ export interface BoundingBox {
   height: number;
 };
 
-export interface ViewingArea extends Interactable {
+export interface ViewingArea {
   id: string;
   video?: string;
   isPlaying: boolean;
   elapsedTimeSec: number;
-}
-
-export type InteractableCommandResponse<MessageType> = {
-  commandID: CommandID;
-  interactableID: InteractableID;
-  error?: string;
-  payload?: InteractableCommandResponseMap[MessageType];
-}
-
-/**
- * Base type for a command that can be sent to an interactable.
- * This type is used only by the client/server interface, which decorates
- * an @see InteractableCommand with a commandID and interactableID
- */
-interface InteractableCommandBase {
-  /**
-   * A unique ID for this command. This ID is used to match a command against a response
-   */
-  commandID: CommandID;
-  /**
-   * The ID of the interactable that this command is being sent to
-   */
-  interactableID: InteractableID;
-  /**
-   * The type of this command
-   */
-  type: string;
 }
 
 export type InteractableCommand =  
@@ -189,8 +150,7 @@ export type InteractableCommand =
   JoinGameCommand | 
   GameMoveCommand<UnoMove> | 
   LeaveGameCommand |
-  DrawFromDeck |
-  DealCardsCommand;
+  DrawFromDeck;
 
 export type InteractableCommandReturnType<CommandType extends InteractableCommand> = 
   CommandType extends JoinGameCommand ? { gameID: string}:
@@ -200,7 +160,6 @@ export type InteractableCommandReturnType<CommandType extends InteractableComman
   CommandType extends ReadyUpCommand ? undefined :
   CommandType extends GameMoveCommand<TicTacToeMove> ? undefined :
   CommandType extends LeaveGameCommand ? undefined :
-  CommandType extends DealCardsCommand ? undefined :
   never;
 
   export interface JoinGameCommand {
@@ -209,9 +168,6 @@ export type InteractableCommandReturnType<CommandType extends InteractableComman
   export interface ViewingAreaUpdateCommand  {
     type: 'ViewingAreaUpdate';
     update: ViewingArea;
-  }
-  export interface DealCardsCommand {
-    type: 'DealCards';
   }
   export interface ChangeColorCommand  {
     type: 'ChangeColor';
@@ -241,13 +197,11 @@ export interface ServerToClientEvents {
   townClosing: () => void;
   chatMessage: (message: ChatMessage) => void;
   interactableUpdate: (interactable: Interactable) => void;
-  commandResponse: (response: InteractableCommandResponse) => void;
 }
 
 export interface ClientToServerEvents {
   chatMessage: (message: ChatMessage) => void;
   playerMovement: (movementData: PlayerLocation) => void;
   interactableUpdate: (update: Interactable) => void;
-  interactableCommand: (command: InteractableCommand & InteractableCommandBase) => void;
 }
 

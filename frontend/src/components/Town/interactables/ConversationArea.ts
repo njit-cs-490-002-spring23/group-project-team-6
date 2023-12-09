@@ -1,8 +1,8 @@
-import ConversationAreaController, {
-  ConversationAreaEvents,
-} from '../../../classes/ConversationAreaController';
+import ConversationAreaController from '../../../classes/ConversationAreaController';
+import TownController from '../../../classes/TownController';
 import { BoundingBox } from '../../../types/CoveyTownSocket';
 import Interactable, { KnownInteractableTypes } from '../Interactable';
+import TownGameScene from '../TownGameScene';
 
 export default class ConversationArea extends Interactable {
   private _topicTextOrUndefined?: Phaser.GameObjects.Text;
@@ -11,7 +11,15 @@ export default class ConversationArea extends Interactable {
 
   private _conversationArea?: ConversationAreaController;
 
-  private _changeListener?: ConversationAreaEvents['topicChange'];
+  private _townController: TownController;
+
+  constructor(scene: TownGameScene) {
+    super(scene);
+    this._townController = scene.coveyTownController;
+    this.setTintFill();
+    this.setAlpha(0.3);
+    this._townController.addListener('conversationAreasChanged', this._updateConversationAreas);
+  }
 
   private get _topicText() {
     const ret = this._topicTextOrUndefined;
@@ -25,16 +33,10 @@ export default class ConversationArea extends Interactable {
     return 'conversationArea';
   }
 
-  removedFromScene(): void {
-    if (this._changeListener) {
-      this._conversationArea?.removeListener('topicChange', this._changeListener);
-    }
-  }
+  removedFromScene(): void {}
 
   addedToScene(): void {
     super.addedToScene();
-    this.setTintFill();
-    this.setAlpha(0.3);
     this.scene.add.text(
       this.x - this.displayWidth / 2,
       this.y - this.displayHeight / 2,
@@ -47,22 +49,32 @@ export default class ConversationArea extends Interactable {
       '(No Topic)',
       { color: '#000000' },
     );
-    this._conversationArea = this.townController.getConversationAreaController(this);
-    this._updateLabelText(this._conversationArea.topic);
-    this._changeListener = newTopic => this._updateLabelText(newTopic);
-    this._conversationArea.addListener('topicChange', this._changeListener);
+    this._updateConversationAreas(this._townController.conversationAreas);
   }
 
-  private _updateLabelText(newTopic: string | undefined) {
-    if (newTopic === undefined) {
-      this._topicText.text = '(No topic)';
-    } else {
-      if (this.isOverlapping) {
-        this._scene.moveOurPlayerTo({ interactableID: this.name });
-      }
-      this._topicText.text = newTopic;
-      if (this._infoTextBox && this._infoTextBox.visible) {
-        this._infoTextBox.setVisible(false);
+  private _updateConversationAreas(areas: ConversationAreaController[]) {
+    const area = areas.find(eachAreaInController => eachAreaInController.id === this.name);
+    if (area !== this._conversationArea) {
+      if (area === undefined) {
+        this._conversationArea = undefined;
+        this._topicText.text = '(No topic)';
+      } else {
+        this._conversationArea = area;
+        if (this.isOverlapping) {
+          this._scene.moveOurPlayerTo({ interactableID: this.name });
+        }
+        const updateListener = (newTopic: string | undefined) => {
+          if (newTopic) {
+            if (this._infoTextBox && this._infoTextBox.visible) {
+              this._infoTextBox.setVisible(false);
+            }
+            this._topicText.text = newTopic;
+          } else {
+            this._topicText.text = '(No topic)';
+          }
+        };
+        updateListener(area.topic);
+        area.addListener('topicChange', updateListener);
       }
     }
   }
@@ -89,7 +101,7 @@ export default class ConversationArea extends Interactable {
   }
 
   overlap(): void {
-    if (this._conversationArea?.topic === undefined) {
+    if (this._conversationArea === undefined) {
       this._showInfoBox();
     }
   }

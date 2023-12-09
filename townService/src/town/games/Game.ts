@@ -5,10 +5,8 @@ import {
   GameMove,
   GameResult,
   GameState,
-  PlayerID,
 } from '../../types/CoveyTownSocket';
 import UnoPlayer from '../../lib/UnoPlayer';
-import Player from '../../lib/Player';
 
 /**
  * This class is the base class for all games. It is responsible for managing the
@@ -19,9 +17,7 @@ export default abstract class Game<StateType extends GameState, MoveType> {
 
   public readonly id: GameInstanceID;
 
-  public _players: Player[] = [];
-  
-  public _unoPlayers: UnoPlayer[] = [];
+  public _players: UnoPlayer[] = [];
 
   protected _result?: GameResult;
 
@@ -50,8 +46,6 @@ export default abstract class Game<StateType extends GameState, MoveType> {
 
   public abstract playerReadyUp(player: UnoPlayer): void;
 
-  public abstract shuffleAndDealCards(): boolean;
-
   /**
    * Apply a move to the game.
    * This method should be implemented by subclasses.
@@ -60,8 +54,6 @@ export default abstract class Game<StateType extends GameState, MoveType> {
    */
   public abstract applyMove(move: GameMove<MoveType>): void;
 
-  public abstract get NextPlayerID(): PlayerID;
-  
   /**
    * Attempt to join a game.
    * This method should be implemented by subclasses.
@@ -84,10 +76,8 @@ export default abstract class Game<StateType extends GameState, MoveType> {
    * @param player The player to join the game.
    * @throws InvalidParametersError if the player can not join the game
    */
-  public join(player: Player): void {
-    this._players.push(player);
-    const unoPlayer: UnoPlayer = new UnoPlayer(player);
-    this._join(unoPlayer);
+  public join(player: UnoPlayer): void {
+    this._join(player);
   }
 
   /**
@@ -96,17 +86,12 @@ export default abstract class Game<StateType extends GameState, MoveType> {
    * @param player The player to leave the game.
    * @throws InvalidParametersError if the player can not leave the game
    */
-  public leave(player: Player): void {
-    const unoPlayer = this._unoPlayers.find((_player) => _player.id === player.id);
-    if (unoPlayer)
-      this._leave(unoPlayer);
+  public leave(player: UnoPlayer): void {
+    this._leave(player);
     this._players = this._players.filter(p => p.id !== player.id);
-    this._unoPlayers = this._unoPlayers.filter(p => p.id !== player.id);
-
   }
 
   public toModel(): GameInstance<StateType> {
-    console.log("game.toModel() called");
     return {
       state: this._state,
       id: this.id,

@@ -14,7 +14,6 @@ import {
 import {
   ChatMessage,
   Interactable,
-  PlayerID,
   PlayerLocation,
   TownEmitter,
   ViewingArea as ViewingAreaModel,
@@ -350,14 +349,12 @@ describe('Town', () => {
   let town: Town;
   let player: Player;
   let playerTestData: MockedPlayer;
-  let playerID: PlayerID;
 
   beforeEach(async () => {
     town = new Town(nanoid(), false, nanoid(), townEmitter);
     playerTestData = mockPlayer(town.townID);
     player = await town.addPlayer(playerTestData.userName, playerTestData.socket);
     playerTestData.player = player;
-    playerID = player.id;
     // Set this dummy player to be off the map so that they do not show up in conversation areas
     playerTestData.moveTo(-1, -1);
 
@@ -393,18 +390,14 @@ describe('Town', () => {
       );
     });
     describe('[T1] interactableUpdate callback', () => {
-      let interactableUpdateHandler: (update: ViewingAreaModel) => void;
+      let interactableUpdateHandler: (update: Interactable) => void;
       beforeEach(() => {
         town.initializeFromMap(testingMaps.twoConvTwoViewing);
         interactableUpdateHandler = getEventListener(playerTestData.socket, 'interactableUpdate');
       });
       it('Should not throw an error for any interactable area that is not a viewing area', () => {
         expect(() =>
-          interactableUpdateHandler({
-            id: 'Name1',
-            topic: nanoid(),
-            occupantsByID: [],
-          } as unknown as ViewingAreaModel),
+          interactableUpdateHandler({ id: 'Name1', topic: nanoid(), occupantsByID: [] }),
         ).not.toThrowError();
       });
       it('Should not throw an error if there is no such viewing area', () => {
@@ -413,7 +406,7 @@ describe('Town', () => {
             id: 'NotActuallyAnInteractable',
             topic: nanoid(),
             occupantsByID: [],
-          } as unknown as ViewingAreaModel),
+          }),
         ).not.toThrowError();
       });
       describe('When called passing a valid viewing area', () => {
@@ -425,8 +418,6 @@ describe('Town', () => {
             elapsedTimeSec: 0,
             isPlaying: true,
             video: nanoid(),
-            occupants: [],
-            type: 'ViewingArea',
           };
           expect(town.addViewingArea(newArea)).toBe(true);
           secondPlayer = mockPlayer(town.townID);
@@ -494,12 +485,7 @@ describe('Town', () => {
         town.initializeFromMap(testingMaps.twoConvOneViewing);
         playerTestData.moveTo(45, 122); // Inside of "Name1" area
         expect(
-          town.addConversationArea({
-            id: 'Name1',
-            topic: 'test',
-            occupants: [],
-            type: 'ConversationArea',
-          }),
+          town.addConversationArea({ id: 'Name1', topic: 'test', occupantsByID: [] }),
         ).toBeTruthy();
         const convArea = town.getInteractable('Name1') as ConversationArea;
         expect(convArea.occupantsByID).toEqual([player.id]);
@@ -513,14 +499,7 @@ describe('Town', () => {
         town.initializeFromMap(testingMaps.twoConvOneViewing);
         playerTestData.moveTo(156, 567); // Inside of "Name3" area
         expect(
-          town.addViewingArea({
-            id: 'Name3',
-            isPlaying: true,
-            elapsedTimeSec: 0,
-            video: nanoid(),
-            occupants: [],
-            type: 'ViewingArea',
-          }),
+          town.addViewingArea({ id: 'Name3', isPlaying: true, elapsedTimeSec: 0, video: nanoid() }),
         ).toBeTruthy();
         const viewingArea = town.getInteractable('Name3');
         expect(viewingArea.occupantsByID).toEqual([player.id]);
@@ -566,8 +545,6 @@ describe('Town', () => {
           isPlaying: true,
           elapsedTimeSec: 100,
           video: nanoid(),
-          occupants: [],
-          type: 'ViewingArea',
         };
         interactableUpdateCallback(update);
       });
@@ -610,48 +587,23 @@ describe('Town', () => {
     });
     it('Should return false if no area exists with that ID', () => {
       expect(
-        town.addConversationArea({
-          id: nanoid(),
-          topic: nanoid(),
-          occupants: [],
-          type: 'ConversationArea',
-        }),
+        town.addConversationArea({ id: nanoid(), topic: nanoid(), occupantsByID: [] }),
       ).toEqual(false);
     });
     it('Should return false if the requested topic is empty', () => {
+      expect(town.addConversationArea({ id: 'Name1', topic: '', occupantsByID: [] })).toEqual(
+        false,
+      );
       expect(
-        town.addConversationArea({
-          id: 'Name1',
-          topic: '',
-          occupants: [],
-          type: 'ConversationArea',
-        }),
-      ).toEqual(false);
-      expect(
-        town.addConversationArea({
-          id: 'Name1',
-          topic: undefined,
-          occupants: [],
-          type: 'ConversationArea',
-        }),
+        town.addConversationArea({ id: 'Name1', topic: undefined, occupantsByID: [] }),
       ).toEqual(false);
     });
     it('Should return false if the area already has a topic', () => {
       expect(
-        town.addConversationArea({
-          id: 'Name1',
-          topic: 'new topic',
-          occupants: [],
-          type: 'ConversationArea',
-        }),
+        town.addConversationArea({ id: 'Name1', topic: 'new topic', occupantsByID: [] }),
       ).toEqual(true);
       expect(
-        town.addConversationArea({
-          id: 'Name1',
-          topic: 'new new topic',
-          occupants: [],
-          type: 'ConversationArea',
-        }),
+        town.addConversationArea({ id: 'Name1', topic: 'new new topic', occupantsByID: [] }),
       ).toEqual(false);
     });
     describe('When successful', () => {
@@ -659,12 +611,7 @@ describe('Town', () => {
       beforeEach(() => {
         playerTestData.moveTo(45, 122); // Inside of "Name1" area
         expect(
-          town.addConversationArea({
-            id: 'Name1',
-            topic: newTopic,
-            occupants: [],
-            type: 'ConversationArea',
-          }),
+          town.addConversationArea({ id: 'Name1', topic: newTopic, occupantsByID: [] }),
         ).toEqual(true);
       });
       it('Should update the local model for that area', () => {
@@ -680,8 +627,7 @@ describe('Town', () => {
         expect(lastEmittedUpdate).toEqual({
           id: 'Name1',
           topic: newTopic,
-          occupants: [player.id],
-          type: 'ConversationArea',
+          occupantsByID: [player.id],
         });
       });
     });
@@ -692,58 +638,23 @@ describe('Town', () => {
     });
     it('Should return false if no area exists with that ID', () => {
       expect(
-        town.addViewingArea({
-          id: nanoid(),
-          isPlaying: false,
-          elapsedTimeSec: 0,
-          video: nanoid(),
-          occupants: [],
-          type: 'ViewingArea',
-        }),
+        town.addViewingArea({ id: nanoid(), isPlaying: false, elapsedTimeSec: 0, video: nanoid() }),
       ).toBe(false);
     });
     it('Should return false if the requested video is empty', () => {
       expect(
-        town.addViewingArea({
-          id: 'Name3',
-          isPlaying: false,
-          elapsedTimeSec: 0,
-          video: '',
-          occupants: [],
-          type: 'ViewingArea',
-        }),
+        town.addViewingArea({ id: 'Name3', isPlaying: false, elapsedTimeSec: 0, video: '' }),
       ).toBe(false);
       expect(
-        town.addViewingArea({
-          id: 'Name3',
-          isPlaying: false,
-          elapsedTimeSec: 0,
-          video: undefined,
-          occupants: [],
-          type: 'ViewingArea',
-        }),
+        town.addViewingArea({ id: 'Name3', isPlaying: false, elapsedTimeSec: 0, video: undefined }),
       ).toBe(false);
     });
     it('Should return false if the area is already active', () => {
       expect(
-        town.addViewingArea({
-          id: 'Name3',
-          isPlaying: false,
-          elapsedTimeSec: 0,
-          video: 'test',
-          occupants: [],
-          type: 'ViewingArea',
-        }),
+        town.addViewingArea({ id: 'Name3', isPlaying: false, elapsedTimeSec: 0, video: 'test' }),
       ).toBe(true);
       expect(
-        town.addViewingArea({
-          id: 'Name3',
-          isPlaying: false,
-          elapsedTimeSec: 0,
-          video: 'test2',
-          occupants: [],
-          type: 'ViewingArea',
-        }),
+        town.addViewingArea({ id: 'Name3', isPlaying: false, elapsedTimeSec: 0, video: 'test2' }),
       ).toBe(false);
     });
     describe('When successful', () => {
@@ -752,13 +663,10 @@ describe('Town', () => {
         isPlaying: true,
         elapsedTimeSec: 100,
         video: nanoid(),
-        occupants: [playerID],
-        type: 'ViewingArea',
       };
       beforeEach(() => {
         playerTestData.moveTo(160, 570); // Inside of "Name3" area
         expect(town.addViewingArea(newModel)).toBe(true);
-        newModel.occupants = [playerID];
       });
 
       it('Should update the local model for that area', () => {
@@ -825,14 +733,9 @@ describe('Town', () => {
       beforeEach(async () => {
         town.initializeFromMap(testingMaps.twoConvOneViewing);
         playerTestData.moveTo(51, 121);
-        expect(
-          town.addConversationArea({
-            id: 'Name1',
-            topic: 'test',
-            occupants: [],
-            type: 'ViewingArea',
-          }),
-        ).toBe(true);
+        expect(town.addConversationArea({ id: 'Name1', topic: 'test', occupantsByID: [] })).toBe(
+          true,
+        );
       });
       it('Adds a player to a new interactable and sets their conversation label, if they move into it', async () => {
         const newPlayer = mockPlayer(town.townID);
