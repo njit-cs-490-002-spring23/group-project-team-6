@@ -53,7 +53,7 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
       setOurHand(gameAreaController.ourHand);
       setTableCards(([
         {color: currentColor || "None", value: currentCardValue || "None", src: gameAreaController.currentImageSrc},
-        {color: 'None',                 value: 'None',                     src: CARD_BACK_IMAGE}, // Face down card
+        {color: 'None',                 value: 'None',                     src: CARD_BACK_IMAGE},
       ]));
       setColorChange(gameAreaController.colorChange);
       setjustPlayedPlayerID(gameAreaController.justPlayedPlayerID);
@@ -65,16 +65,22 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
   }, [townController, gameAreaController, toast]);
 
   const playerHandComponentButtons = (listOfCards: Card[]) => {
-    const buttonStyle = {
-      width: '100%', // Adjust the width as needed
-      height: '100%', // Adjust the height as needed
-      backgroundColor: 'white',
-      margin: 0,
-      padding: 0,
+    const cardStyle = {
+      width: '37.5px',
+      height: '50px',
     };
+
+    const buttonStyle = {
+      ...cardStyle,
+      minWidth:  '40px',
+      minHeight: '50px',
+      padding: '1px',
+      backgroundColor: 'transparent',
+    };
+
   
     return (
-      <div className="player-hand" style={{ display: 'flex', justifyContent: 'flex-start', padding: '0px',width: '45%', height: 'auto' }}>
+      <div className="player-hand" style={{ display: 'flex', justifyContent: 'flex-start' }}>
         {listOfCards.map((card : Card) => (
           <Button
             key={card.src}
@@ -96,7 +102,7 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
             <Image
               src={card.src}  
               alt={card.color} 
-              style={{ width: '100%', height: '100%' }} 
+              style={cardStyle} 
             />
           </Button>
         ))}
@@ -105,20 +111,23 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
   };
 
   const tableCardsComponent = (_tableCards: Card[]) => {
+    const cardStyle = {
+      width: '45px',
+      height: '60px',
+    };
+
     const buttonStyle = {
-      width: '100%', // Adjust the width as needed
-      height: '100%', // Adjust the height as needed
-      backgroundColor: 'white',
-      margin: 0,
-      padding: 0,
+      ...cardStyle,
+      padding: '0px', 
+      backgroundColor: 'transparent',
     };
   
     return (
-      <div className="player-hand" style={{ display: 'flex', justifyContent: 'flex-start', padding: '0px',width: '45%', height: 'auto' }}>
+      <div className="player-hand" style={{ display: 'flex', justifyContent: 'flex-start'}}>
         <Image
           src={_tableCards[0].src}  
           alt={_tableCards[0].color} 
-          style={{ width: '100%', height: '100%' }} 
+          style={cardStyle} 
         />
         <Button
           key={_tableCards[1].src}
@@ -139,7 +148,7 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
           <Image
             src={_tableCards[1].src}  
             alt={_tableCards[1].color} 
-            style={{ width: '100%', height: '100%' }} 
+            style={cardStyle} 
           />
           </Button>
       </div>
@@ -148,23 +157,75 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
 
   const colorSquareComponent = () => {
     const colors = ['yellow', 'blue', 'red', 'green'];
+  
+    const squareStyle = {
+      flex: 1,
+      width: '100px',
+      height: '100px',
+      display: 'flex',
+      cursor: 'pointer',
+      transition: 'transform 0.2s background-color 0.3s',
+      borderRadius: '12px',
+    };
+
+    const componentStyle = {
+      width: '212px',
+      height: '212px',
+      borderRadius: '16px',
+      boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+      backgroundColor: 'black',
+    };
+  
+    return (
+      <>
+        <style>
+          {`
+            .colorSquare:hover {
+              opacity: 0.7;
+            }
+          `}
+        </style>
+        <div style={{ ...componentStyle }}>
+          <div style={{ display: 'flex' }}>
+            <div className="colorSquare" style={{ ...squareStyle, backgroundColor: colors[0], margin: '4px 2px 2px 4px'}} onClick={() => gameAreaController.changeColor('Yellow')}>
+            </div>
+            <div className="colorSquare" style={{ ...squareStyle, backgroundColor: colors[1], margin: '4px 4px 2px 2px'}} onClick={() => gameAreaController.changeColor('Blue')}>
+            </div>
+          </div>
+          <div style={{ display: 'flex' }}>
+            <div className="colorSquare" style={{ ...squareStyle, backgroundColor: colors[2], margin: '2px 2px 4px 4px' }} onClick={() => gameAreaController.changeColor('Red')}>
+            </div>
+            <div className="colorSquare" style={{ ...squareStyle, backgroundColor: colors[3], margin: '2px 4px 4px 2px' }} onClick={() => gameAreaController.changeColor('Green')}>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  };
+  
+  const playerHandComponent = (listOfCards: Card[]) => {
+    const cardStyle = {
+      width: '30px',
+      height: '40px',
+    };
 
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', position: 'relative', width: '200px', height: '200px' }}>
-        <div style={{ flex: 1, display: 'flex' }}>
-          <div style={{ flex: 1, backgroundColor: colors[0] }} onClick={() => gameAreaController.changeColor('Yellow')}></div>
-          <div style={{ flex: 1, backgroundColor: colors[1] }} onClick={() => gameAreaController.changeColor('Blue')}></div>
-        </div>
-        <div style={{ flex: 1, display: 'flex' }}>
-          <div style={{ flex: 1, backgroundColor: colors[2] }} onClick={() => gameAreaController.changeColor('Red')}></div>
-          <div style={{ flex: 1, backgroundColor: colors[3] }} onClick={() => gameAreaController.changeColor('Green')}></div>
-        </div>
+      <div className="player-hand" style={{ display: 'flex'}}>
+        {listOfCards.map((card: Card) => (
+          <Image
+            key={card.src}
+            src={card.src}
+            alt={card.color}
+            style={cardStyle}
+          ></Image>
+        ))}
       </div>
     );
   };
 
-  const [otherPlayersHands] = useState<Array<UnoCard[]>>(new Array(3).fill(new Array(4).fill({ src: CARD_BACK_IMAGE })));
+  const [otherPlayersHands] = useState<Array<UnoCard[]>>(new Array(3).fill(new Array(6).fill({ src: CARD_BACK_IMAGE })));
   const tableStyle: React.CSSProperties = {
+    position: 'relative',
     width: '90%',
     height: '325px',
     backgroundColor: 'red',
@@ -173,36 +234,36 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'column',
-    boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+    boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.2)',
+    border: '3px solid black',
+    transform: 'translate(5%, 10%)'
   };
+
   const deckStyle: React.CSSProperties = {
-    position: 'absolute',
-    top: '60%',
-    left: '46%',
-    transform: 'translate(-50%, -50%)', // This centers the deck
-    zIndex: 1, // Ensures the deck is above the player hands
+    position: 'relative',
   };
+
   const playerHandStyle: React.CSSProperties = {
-    position: 'absolute',
-    // Adjust these values to position the player hands correctly
+    position: 'relative',
   };
+
+  const topHandStyle: React.CSSProperties = {
+    position: 'relative',
+  };
+
   const leftHandStyle: React.CSSProperties = {
-    position: 'absolute',
-    top: '60%',
-    left: '10%', // Adjust this value as needed
-    transform: 'rotate(-90deg)', // Rotate the hand to align with the table's curve
+    position: 'relative',
+    transform: 'rotate(-90deg)',
   };
 
   const rightHandStyle: React.CSSProperties = {
-    position: 'absolute',
-    top: '60%',
-    right: '19%', // Adjust this value as needed
-    transform: 'rotate(90deg)', // Rotate the hand to align with the table's curve
+    position: 'relative',
+    transform: 'rotate(90deg)',
   };
-  const cardSize = '30px'; // For example, '50px' for smaller cards
-    if (gameStatus === 'IN_PROGRESS') {
+
+  if (gameStatus === 'IN_PROGRESS') {
     return (
-      <Flex direction="column" align="center" style={tableStyle}>
+      <Flex style={tableStyle}>
         <Flex style={deckStyle}>
         {
          justPlayedPlayerID === townController.ourPlayer.id &&
@@ -210,29 +271,20 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
          colorSquareComponent() : tableCardsComponent(tableCards)
         }
         </Flex>
-
-        <Flex style={{...playerHandStyle, bottom: '10%'}} justify="center">
+        <Flex style={{ ...playerHandStyle, padding: '2px', position: 'absolute', bottom: '10%', alignItems: "center", backgroundColor: 'rgba(0,0,0,.7)'}}>
           {playerHandComponentButtons(ourHand)}
         </Flex>
 
-        <Flex style={{...playerHandStyle, top: '35%'}} justify="center">
-          {otherPlayersHands[0].map((card, cardIndex) => (
-            <Image key={cardIndex} src={card.src} boxSize={cardSize}/>
-          ))}
+        <Flex style={{ ...topHandStyle, position: 'absolute', top: '10%' }}>
+          {playerHandComponent(otherPlayersHands[0])}
         </Flex>
 
-        {/* Left hand */}
-        <Flex style={leftHandStyle} justify="center" wrap="wrap">
-          {otherPlayersHands[1].map((card, cardIndex) => (
-            <Image key={cardIndex} src={card.src} boxSize={cardSize}/>
-          ))}
+        <Flex style={{ ...leftHandStyle, position: 'absolute', left: '5%', top: '50%', transform: 'translateY(-50%) rotate(-90deg)' }}>
+          {playerHandComponent(otherPlayersHands[1])}
         </Flex>
 
-        {/* Right hand */}
-        <Flex style={rightHandStyle} justify="center" wrap="wrap">
-          {otherPlayersHands[2].map((card, cardIndex) => (
-            <Image key={cardIndex} src={card.src} boxSize={cardSize}/>
-          ))}
+        <Flex style={{ ...rightHandStyle, position: 'absolute', right: '5%', top: '50%', transform: 'translateY(-50%) rotate(90deg)' }}>
+          {playerHandComponent(otherPlayersHands[2])}
         </Flex>
       </Flex>
     );
