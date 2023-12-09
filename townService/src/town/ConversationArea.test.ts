@@ -15,7 +15,7 @@ describe('ConversationArea', () => {
 
   beforeEach(() => {
     mockClear(townEmitter);
-    testArea = new ConversationArea({ topic, id, occupants: [] }, testAreaBox, townEmitter);
+    testArea = new ConversationArea({ topic, id, occupantsByID: [] }, testAreaBox, townEmitter);
     newPlayer = new Player(nanoid(), mock<TownEmitter>());
     testArea.add(newPlayer);
   });
@@ -24,12 +24,7 @@ describe('ConversationArea', () => {
       expect(testArea.occupantsByID).toEqual([newPlayer.id]);
 
       const lastEmittedUpdate = getLastEmittedEvent(townEmitter, 'interactableUpdate');
-      expect(lastEmittedUpdate).toEqual({
-        topic,
-        id,
-        occupants: [newPlayer.id],
-        type: 'ConversationArea',
-      });
+      expect(lastEmittedUpdate).toEqual({ topic, id, occupantsByID: [newPlayer.id] });
     });
     it("Sets the player's conversationLabel and emits an update for their location", () => {
       expect(newPlayer.location.interactableID).toEqual(id);
@@ -47,12 +42,7 @@ describe('ConversationArea', () => {
 
       expect(testArea.occupantsByID).toEqual([extraPlayer.id]);
       const lastEmittedUpdate = getLastEmittedEvent(townEmitter, 'interactableUpdate');
-      expect(lastEmittedUpdate).toEqual({
-        topic,
-        id,
-        occupants: [extraPlayer.id],
-        type: 'ConversationArea',
-      });
+      expect(lastEmittedUpdate).toEqual({ topic, id, occupantsByID: [extraPlayer.id] });
     });
     it("Clears the player's conversationLabel and emits an update for their location", () => {
       testArea.remove(newPlayer);
@@ -63,22 +53,16 @@ describe('ConversationArea', () => {
     it('Clears the topic of the conversation area when the last occupant leaves', () => {
       testArea.remove(newPlayer);
       const lastEmittedUpdate = getLastEmittedEvent(townEmitter, 'interactableUpdate');
-      expect(lastEmittedUpdate).toEqual({
-        topic: undefined,
-        id,
-        occupants: [],
-        type: 'ConversationArea',
-      });
+      expect(lastEmittedUpdate).toEqual({ topic: undefined, id, occupantsByID: [] });
       expect(testArea.topic).toBeUndefined();
     });
   });
-  test('toModel sets the ID, topic and occupants and sets no other properties', () => {
+  test('toModel sets the ID, topic and occupantsByID and sets no other properties', () => {
     const model = testArea.toModel();
     expect(model).toEqual({
       id,
       topic,
-      occupants: [newPlayer.id],
-      type: 'ConversationArea',
+      occupantsByID: [newPlayer.id],
     });
   });
   describe('fromMapObject', () => {

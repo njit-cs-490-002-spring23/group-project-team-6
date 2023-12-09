@@ -1,11 +1,9 @@
 /* eslint-disable no-console */
 
 export default class DebugLogger {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   private enabled = false;
 
   constructor(
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     private prefix: string,
   ) {
   }

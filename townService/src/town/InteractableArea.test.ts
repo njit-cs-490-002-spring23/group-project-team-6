@@ -2,27 +2,13 @@ import { mock, mockClear } from 'jest-mock-extended';
 import { nanoid } from 'nanoid';
 import Player from '../lib/Player';
 import { defaultLocation, getLastEmittedEvent } from '../TestUtils';
-import {
-  BoundingBox,
-  ConversationArea as ConversationAreaModel,
-  InteractableCommand,
-  InteractableCommandReturnType,
-  TownEmitter,
-  XY,
-} from '../types/CoveyTownSocket';
+import { BoundingBox, Interactable, TownEmitter, XY } from '../types/CoveyTownSocket';
 import ConversationArea from './ConversationArea';
 import InteractableArea, { PLAYER_SPRITE_HEIGHT, PLAYER_SPRITE_WIDTH } from './InteractableArea';
 
 class TestInteractableArea extends InteractableArea {
-  // eslint-disable-next-line class-methods-use-this
-  public handleCommand<
-    CommandType extends InteractableCommand,
-  >(): InteractableCommandReturnType<CommandType> {
-    throw new Error('Method not implemented.');
-  }
-
-  public toModel(): ConversationAreaModel {
-    return { id: this.id, occupants: [], type: 'ConversationArea' };
+  public toModel(): Interactable {
+    return { id: this.id, occupantsByID: [] };
   }
 }
 const HALF_W = PLAYER_SPRITE_WIDTH / 2;
@@ -176,7 +162,7 @@ describe('InteractableArea', () => {
       expect(
         testArea.overlaps(
           new ConversationArea(
-            { id: 'testArea', occupants: [] },
+            { id: 'testArea', occupantsByID: [] },
             intersectBox,
             mock<TownEmitter>(),
           ),
@@ -218,7 +204,7 @@ describe('InteractableArea', () => {
         expect(
           testArea.overlaps(
             new ConversationArea(
-              { id: 'testArea', occupants: [] },
+              { id: 'testArea', occupantsByID: [] },
               intersectBox,
               mock<TownEmitter>(),
             ),
@@ -259,7 +245,7 @@ describe('InteractableArea', () => {
       expect(
         testArea.overlaps(
           new ConversationArea(
-            { id: 'testArea', occupants: [] },
+            { id: 'testArea', occupantsByID: [] },
             intersectBox,
             mock<TownEmitter>(),
           ),

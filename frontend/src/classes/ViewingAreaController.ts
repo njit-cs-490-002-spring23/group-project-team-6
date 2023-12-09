@@ -1,10 +1,11 @@
-import { ViewingArea as ViewingAreaModel } from '../../../shared/types/CoveyTownSocket';
-import InteractableAreaController, { BaseInteractableEventMap } from './InteractableAreaController';
+import { EventEmitter } from 'events';
+import TypedEventEmitter from 'typed-emitter';
+import { ViewingArea as ViewingAreaModel } from '../types/CoveyTownSocket';
 
 /**
  * The events that a ViewingAreaController can emit
  */
-export type ViewingAreaEvents = BaseInteractableEventMap & {
+export type ViewingAreaEvents = {
   /**
    * A playbackChange event indicates that the playing/paused state has changed.
    * Listeners are passed the new state in the parameter `isPlaying`
@@ -32,10 +33,7 @@ export type ViewingAreaEvents = BaseInteractableEventMap & {
  * The ViewingAreaController implements callbacks that handle events from the video player in this browser window, and
  * emits updates when the state is updated, @see ViewingAreaEvents
  */
-export default class ViewingAreaController extends InteractableAreaController<
-  ViewingAreaEvents,
-  ViewingAreaModel
-> {
+export default class ViewingAreaController extends (EventEmitter as new () => TypedEventEmitter<ViewingAreaEvents>) {
   private _model: ViewingAreaModel;
 
   /**
@@ -45,12 +43,17 @@ export default class ViewingAreaController extends InteractableAreaController<
    * @param viewingAreaModel The viewing area model that this controller should represent
    */
   constructor(viewingAreaModel: ViewingAreaModel) {
-    super(viewingAreaModel.id);
+    super();
     this._model = viewingAreaModel;
   }
 
-  public isActive(): boolean {
-    return this._model.video !== undefined;
+  /**
+   * The ID of the viewing area represented by this viewing area controller
+   * This property is read-only: once a ViewingAreaController is created, it will always be
+   * tied to the same viewing area ID.
+   */
+  public get id() {
+    return this._model.id;
   }
 
   /**
@@ -115,7 +118,7 @@ export default class ViewingAreaController extends InteractableAreaController<
   /**
    * @returns ViewingAreaModel that represents the current state of this ViewingAreaController
    */
-  public toInteractableAreaModel(): ViewingAreaModel {
+  public viewingAreaModel(): ViewingAreaModel {
     return this._model;
   }
 
@@ -125,7 +128,7 @@ export default class ViewingAreaController extends InteractableAreaController<
    *
    * @param updatedModel
    */
-  protected _updateFrom(updatedModel: ViewingAreaModel): void {
+  public updateFrom(updatedModel: ViewingAreaModel): void {
     this.isPlaying = updatedModel.isPlaying;
     this.elapsedTimeSec = updatedModel.elapsedTimeSec;
     this.video = updatedModel.video;

@@ -1,11 +1,8 @@
 import { ITiledMapObject } from '@jonbell/tiled-map-type-guard';
-import InvalidParametersError from '../lib/InvalidParametersError';
 import Player from '../lib/Player';
 import {
   BoundingBox,
   ConversationArea as ConversationAreaModel,
-  InteractableCommand,
-  InteractableCommandReturnType,
   TownEmitter,
 } from '../types/CoveyTownSocket';
 import InteractableArea from './InteractableArea';
@@ -27,7 +24,7 @@ export default class ConversationArea extends InteractableArea {
    * @param townEmitter a broadcast emitter that can be used to emit updates to players
    */
   public constructor(
-    { topic, id }: Omit<ConversationAreaModel, 'type'>,
+    { topic, id }: ConversationAreaModel,
     coordinates: BoundingBox,
     townEmitter: TownEmitter,
   ) {
@@ -58,9 +55,8 @@ export default class ConversationArea extends InteractableArea {
   public toModel(): ConversationAreaModel {
     return {
       id: this.id,
-      occupants: this.occupantsByID,
+      occupantsByID: this.occupantsByID,
       topic: this.topic,
-      type: 'ConversationArea',
     };
   }
 
@@ -79,13 +75,6 @@ export default class ConversationArea extends InteractableArea {
       throw new Error(`Malformed viewing area ${name}`);
     }
     const rect: BoundingBox = { x: mapObject.x, y: mapObject.y, width, height };
-    return new ConversationArea({ id: name, occupants: [] }, rect, broadcastEmitter);
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  public handleCommand<
-    CommandType extends InteractableCommand,
-  >(): InteractableCommandReturnType<CommandType> {
-    throw new InvalidParametersError('Unknown command type');
+    return new ConversationArea({ id: name, occupantsByID: [] }, rect, broadcastEmitter);
   }
 }
