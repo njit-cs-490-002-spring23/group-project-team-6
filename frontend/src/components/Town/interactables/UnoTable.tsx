@@ -154,6 +154,17 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
       </div>
     );
   };
+  const colorSquareModalStyle = {
+    top: 0,
+    left: 0,
+    width: '100vw',
+    height: '100vh',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+    zIndex: 1000,
+  };
 
   const colorSquareComponent = () => {
     const colors = ['yellow', 'blue', 'red', 'green'];
@@ -185,17 +196,19 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
             }
           `}
         </style>
-        <div style={{ ...componentStyle }}>
-          <div style={{ display: 'flex' }}>
-            <div className="colorSquare" style={{ ...squareStyle, backgroundColor: colors[0], margin: '4px 2px 2px 4px'}} onClick={() => gameAreaController.changeColor('Yellow')}>
+        <div style={colorSquareModalStyle}>
+          <div style={{ ...componentStyle, zIndex: 2000}}>
+            <div style={{ display: 'flex' }}>
+              <div className="colorSquare" style={{ ...squareStyle, backgroundColor: colors[0], margin: '4px 2px 2px 4px'}} onClick={() => gameAreaController.changeColor('Yellow')}>
+              </div>
+              <div className="colorSquare" style={{ ...squareStyle, backgroundColor: colors[1], margin: '4px 4px 2px 2px'}} onClick={() => gameAreaController.changeColor('Blue')}>
+              </div>
             </div>
-            <div className="colorSquare" style={{ ...squareStyle, backgroundColor: colors[1], margin: '4px 4px 2px 2px'}} onClick={() => gameAreaController.changeColor('Blue')}>
-            </div>
-          </div>
-          <div style={{ display: 'flex' }}>
-            <div className="colorSquare" style={{ ...squareStyle, backgroundColor: colors[2], margin: '2px 2px 4px 4px' }} onClick={() => gameAreaController.changeColor('Red')}>
-            </div>
-            <div className="colorSquare" style={{ ...squareStyle, backgroundColor: colors[3], margin: '2px 4px 4px 2px' }} onClick={() => gameAreaController.changeColor('Green')}>
+            <div style={{ display: 'flex' }}>
+              <div className="colorSquare" style={{ ...squareStyle, backgroundColor: colors[2], margin: '2px 2px 4px 4px' }} onClick={() => gameAreaController.changeColor('Red')}>
+              </div>
+              <div className="colorSquare" style={{ ...squareStyle, backgroundColor: colors[3], margin: '2px 4px 4px 2px' }} onClick={() => gameAreaController.changeColor('Green')}>
+              </div>
             </div>
           </div>
         </div>
@@ -309,23 +322,26 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
         size="lg">
         Ready Up
       </Button>
-      <Button 
-        onClick={async () => {
-          try {
-            await gameAreaController.dealCards();
-          } catch (err) {
-            toast({
-              title: 'Error Dealing Cards',
-              description: (err as Error).toString(),
-              status: 'error',
-            });
-          }
-        }} 
-        variant="outline" 
-        colorScheme="white" 
-        size="lg">
-        Deal Cards
-      </Button>
+      {
+        players.length > 1 &&
+        <Button 
+          onClick={async () => {
+            try {
+              await gameAreaController.dealCards();
+            } catch (err) {
+              toast({
+                title: 'Error Dealing Cards',
+                description: (err as Error).toString(),
+                status: 'error',
+              });
+            }
+          }} 
+          variant="outline" 
+          colorScheme="white" 
+          size="lg">
+          Deal Cards
+        </Button>
+      }
     </Flex>
     );
   }
