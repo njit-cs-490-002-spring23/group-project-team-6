@@ -3,17 +3,11 @@ import { Card, Color, Value } from '../types/CoveyTownSocket';
 export class UnoCard implements Card {
   color: Color;
 
-  id: number;
-
   value: Value;
 
-  src: string;
-
-  constructor(id: number, color: Color, value: Value, src: string) {
-    this.id = id;
+  constructor(color: Color, value: Value) {
     this.color = color;
     this.value = value;
-    this.src = src;
   }
 
   canPlayOn(topCard: Card): boolean {

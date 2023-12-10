@@ -1,6 +1,6 @@
 import { mock, mockClear } from 'jest-mock-extended';
 import { nanoid } from 'nanoid';
-import { PlayerLocation } from '../../../shared/types/CoveyTownSocket';
+import { PlayerLocation } from '../types/CoveyTownSocket';
 import ConversationAreaController, { ConversationAreaEvents } from './ConversationAreaController';
 import PlayerController from './PlayerController';
 
@@ -53,11 +53,10 @@ describe('[T2] ConversationAreaController', () => {
       testArea.occupants = newOccupants;
       expect(testArea.occupants).toEqual(newOccupants);
       expect(mockListeners.occupantsChange).toBeCalledWith(newOccupants);
-      expect(testArea.toInteractableAreaModel()).toEqual({
+      expect(testArea.toConversationAreaModel()).toEqual({
         id: testArea.id,
         topic: testArea.topic,
-        occupants: testArea.occupants.map(eachOccupant => eachOccupant.id),
-        type: 'ConversationArea',
+        occupantsByID: testArea.occupants.map(eachOccupant => eachOccupant.id),
       });
     });
   });
@@ -72,11 +71,10 @@ describe('[T2] ConversationAreaController', () => {
       testArea.topic = newTopic;
       expect(mockListeners.topicChange).toBeCalledWith(newTopic);
       expect(testArea.topic).toEqual(newTopic);
-      expect(testArea.toInteractableAreaModel()).toEqual({
+      expect(testArea.toConversationAreaModel()).toEqual({
         id: testArea.id,
         topic: newTopic,
-        occupants: testArea.occupants.map(eachOccupant => eachOccupant.id),
-        type: 'ConversationArea',
+        occupantsByID: testArea.occupants.map(eachOccupant => eachOccupant.id),
       });
     });
   });

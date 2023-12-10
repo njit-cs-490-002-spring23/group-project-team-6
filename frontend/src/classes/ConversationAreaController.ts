@@ -1,14 +1,17 @@
+import EventEmitter from 'events';
+import _ from 'lodash';
 import { useEffect, useState } from 'react';
+import TypedEmitter from 'typed-emitter';
 import { ConversationArea as ConversationAreaModel } from '../types/CoveyTownSocket';
 import PlayerController from './PlayerController';
-import InteractableAreaController, { BaseInteractableEventMap } from './InteractableAreaController';
 
 /**
  * The events that the ConversationAreaController emits to subscribers. These events
  * are only ever emitted to local components (not to the townService).
  */
-export type ConversationAreaEvents = BaseInteractableEventMap & {
+export type ConversationAreaEvents = {
   topicChange: (newTopic: string | undefined) => void;
+  occupantsChange: (newOccupants: PlayerController[]) => void;
 };
 
 // The special string that will be displayed when a conversation area does not have a topic set
@@ -18,10 +21,11 @@ export const NO_TOPIC_STRING = '(No topic)';
  * implementing the logic to bridge between the townService's interpretation of conversation areas and the
  * frontend's. The ConversationAreaController emits events when the conversation area changes.
  */
-export default class ConversationAreaController extends InteractableAreaController<
-  ConversationAreaEvents,
-  ConversationAreaModel
-> {
+export default class ConversationAreaController extends (EventEmitter as new () => TypedEmitter<ConversationAreaEvents>) {
+  private _occupants: PlayerController[] = [];
+
+  private _id: string;
+
   private _topic?: string;
 
   /**
@@ -30,12 +34,34 @@ export default class ConversationAreaController extends InteractableAreaControll
    * @param topic
    */
   constructor(id: string, topic?: string) {
-    super(id);
+    super();
+    this._id = id;
     this._topic = topic;
   }
 
-  public isActive(): boolean {
-    return this.topic !== undefined && this.occupants.length > 0;
+  /**
+   * The ID of this conversation area (read only)
+   */
+  get id() {
+    return this._id;
+  }
+
+  /**
+   * The list of occupants in this conversation area. Changing the set of occupants
+   * will emit an occupantsChange event.
+   */
+  set occupants(newOccupants: PlayerController[]) {
+    if (
+      newOccupants.length !== this._occupants.length ||
+      _.xor(newOccupants, this._occupants).length > 0
+    ) {
+      this.emit('occupantsChange', newOccupants);
+      this._occupants = newOccupants;
+    }
+  }
+
+  get occupants() {
+    return this._occupants;
   }
 
   /**
@@ -54,27 +80,22 @@ export default class ConversationAreaController extends InteractableAreaControll
     return this._topic;
   }
 
-  protected _updateFrom(newModel: ConversationAreaModel): void {
-    this.topic = newModel.topic;
-  }
-
   /**
    * A conversation area is empty if there are no occupants in it, or the topic is undefined.
    */
   isEmpty(): boolean {
-    return this._topic === undefined || this.occupants.length === 0;
+    return this._topic === undefined || this._occupants.length === 0;
   }
 
   /**
    * Return a representation of this ConversationAreaController that matches the
    * townService's representation and is suitable for transmitting over the network.
    */
-  toInteractableAreaModel(): ConversationAreaModel {
+  toConversationAreaModel(): ConversationAreaModel {
     return {
       id: this.id,
-      occupants: this.occupants.map(player => player.id),
+      occupantsByID: this.occupants.map(player => player.id),
       topic: this.topic,
-      type: 'ConversationArea',
     };
   }
 
@@ -89,9 +110,25 @@ export default class ConversationAreaController extends InteractableAreaControll
     playerFinder: (playerIDs: string[]) => PlayerController[],
   ): ConversationAreaController {
     const ret = new ConversationAreaController(convAreaModel.id, convAreaModel.topic);
-    ret.occupants = playerFinder(convAreaModel.occupants);
+    ret.occupants = playerFinder(convAreaModel.occupantsByID);
     return ret;
   }
+}
+
+/**
+ * A react hook to retrieve the occupants of a ConversationAreaController, returning an array of PlayerController.
+ *
+ * This hook will re-render any components that use it when the set of occupants changes.
+ */
+export function useConversationAreaOccupants(area: ConversationAreaController): PlayerController[] {
+  const [occupants, setOccupants] = useState(area.occupants);
+  useEffect(() => {
+    area.addListener('occupantsChange', setOccupants);
+    return () => {
+      area.removeListener('occupantsChange', setOccupants);
+    };
+  }, [area]);
+  return occupants;
 }
 
 /**

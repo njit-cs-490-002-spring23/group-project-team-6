@@ -1,14 +1,9 @@
 import { ITiledMapObject } from '@jonbell/tiled-map-type-guard';
-import InvalidParametersError from '../lib/InvalidParametersError';
 import Player from '../lib/Player';
 import {
   BoundingBox,
-  InteractableCommand,
-  InteractableCommandReturnType,
-  InteractableID,
   TownEmitter,
   ViewingArea as ViewingAreaModel,
-  ViewingAreaUpdateCommand,
 } from '../types/CoveyTownSocket';
 import InteractableArea from './InteractableArea';
 
@@ -39,7 +34,7 @@ export default class ViewingArea extends InteractableArea {
    * @param townEmitter a broadcast emitter that can be used to emit updates to players
    */
   public constructor(
-    { id, isPlaying, elapsedTimeSec: progress, video }: Omit<ViewingAreaModel, 'type'>,
+    { id, isPlaying, elapsedTimeSec: progress, video }: ViewingAreaModel,
     coordinates: BoundingBox,
     townEmitter: TownEmitter,
   ) {
@@ -86,8 +81,6 @@ export default class ViewingArea extends InteractableArea {
       video: this._video,
       isPlaying: this._isPlaying,
       elapsedTimeSec: this._elapsedTimeSec,
-      occupants: this.occupantsByID,
-      type: 'ViewingArea',
     };
   }
 
@@ -103,21 +96,6 @@ export default class ViewingArea extends InteractableArea {
       throw new Error(`Malformed viewing area ${name}`);
     }
     const rect: BoundingBox = { x: mapObject.x, y: mapObject.y, width, height };
-    return new ViewingArea(
-      { isPlaying: false, id: name as InteractableID, elapsedTimeSec: 0, occupants: [] },
-      rect,
-      townEmitter,
-    );
-  }
-
-  public handleCommand<CommandType extends InteractableCommand>(
-    command: CommandType,
-  ): InteractableCommandReturnType<CommandType> {
-    if (command.type === 'ViewingAreaUpdate') {
-      const viewingArea = command as ViewingAreaUpdateCommand;
-      this.updateModel(viewingArea.update);
-      return {} as InteractableCommandReturnType<CommandType>;
-    }
-    throw new InvalidParametersError('Unknown command type');
+    return new ViewingArea({ isPlaying: false, id: name, elapsedTimeSec: 0 }, rect, townEmitter);
   }
 }
