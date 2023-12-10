@@ -62,7 +62,6 @@ function UnoArea({ interactableID }: { interactableID: InteractableID }): JSX.El
   const [joiningGame, setJoiningGame] = useState(false);
   const [players, setplayers] = useState<PlayerController[]>(gameAreaController.players);
   const [whoseTurn, setWhoseTurn] = useState<PlayerController | undefined>(gameAreaController.whoseTurn);
-  const canDealCards = players.length >= 2;
 
   const toast = useToast();
   useEffect(() => {
@@ -106,7 +105,7 @@ function UnoArea({ interactableID }: { interactableID: InteractableID }): JSX.El
     name: string;
     isReady: boolean;
   };
-  const playerComponent = ({ player, onReady }: { player: Player; onReady: (id: string) => void }) => {
+  const PlayerComponent = ({ player, onReady }: { player: Player; onReady: (id: string) => void }) => {
     return (
       <div>
         <p>{player.name}</p>
@@ -129,7 +128,7 @@ function UnoArea({ interactableID }: { interactableID: InteractableID }): JSX.El
     gameStatusText = (
       <>
         {whoseTurn === townController.ourPlayer
-          ? 'Your'
+          ? 'your'
           : whoseTurn?.userName + "'s"}{' '}
         turn
       </>
