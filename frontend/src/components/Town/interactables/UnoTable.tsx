@@ -64,6 +64,34 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
     };
   }, [townController, gameAreaController, toast]);
 
+  const calculatePlayerPosition = (index: number, ourPlayerIndex: number, totalPlayers: number) => {
+    const relativeIndex = ((index - ourPlayerIndex + totalPlayers) % totalPlayers);
+    const angle = (2 * Math.PI) / totalPlayers;
+    const radius = 20; // Adjust this value as needed
+    const x = 42.5 + radius * 1.5 * Math.sin(angle * relativeIndex);
+    const y = 55 + radius * Math.cos(angle * relativeIndex);
+    return { left: `${x}%`, top: `${y}%`,width: 'auto', height: 'auto',backgroundColor: 'transparent'};
+  };
+
+  const ourPlayerIndex = players.findIndex(player => player.id === townController.ourPlayer.id);
+
+  const playerComponents = players.map((player, index) => {
+    const position = calculatePlayerPosition(index, ourPlayerIndex, players.length);
+    if (index !== ourPlayerIndex && playersHands && playersHands[index] !== undefined){
+      return (
+        <div key={player.id} style={{ position: 'absolute', ...position }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ marginRight: '20px' }}>{player.userName}</div>
+            <div style={{ position: 'relative', display: 'inline-block' }}>
+              <div style={{ position: 'absolute', width: '40px', height: '40px', borderRadius: '50%', border: '2px solid #000', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}></div>
+              <div style={{ position: 'relative', zIndex: 1 }}>{playersHands[index].length}</div>
+            </div>
+          </div>       
+        </div>
+      );
+    }
+  });
+
   const playerHandComponentButtons = (listOfCards: Card[]) => {
     const cardStyle = {
       width: '37.5px',
@@ -236,7 +264,6 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
     );
   };
 
-  const [otherPlayersHands] = useState<Array<UnoCard[]>>(new Array(3).fill(new Array(6).fill({ src: CARD_BACK_IMAGE })));
   const tableStyle: React.CSSProperties = {
     position: 'relative',
     width: '90%',
@@ -260,20 +287,6 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
     position: 'relative',
   };
 
-  const topHandStyle: React.CSSProperties = {
-    position: 'relative',
-  };
-
-  const leftHandStyle: React.CSSProperties = {
-    position: 'relative',
-    transform: 'rotate(-90deg)',
-  };
-
-  const rightHandStyle: React.CSSProperties = {
-    position: 'relative',
-    transform: 'rotate(90deg)',
-  };
-
   if (gameStatus === 'IN_PROGRESS') {
     return (
       <Flex style={tableStyle}>
@@ -283,21 +296,12 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
          colorChange ? 
          colorSquareComponent() : tableCardsComponent(tableCards)
         }
-        </Flex>
-        <Flex style={{ ...playerHandStyle, padding: '2px', position: 'absolute', bottom: '10%', alignItems: "center", backgroundColor: 'rgba(0,0,0,.7)'}}>
+        </Flex> 
+        <Flex style={{...playerHandStyle, bottom: '10%'}} justify="center">
           {playerHandComponentButtons(ourHand)}
         </Flex>
-
-        <Flex style={{ ...topHandStyle, position: 'absolute', top: '10%' }}>
-          {playerHandComponent(otherPlayersHands[0])}
-        </Flex>
-
-        <Flex style={{ ...leftHandStyle, position: 'absolute', left: '5%', top: '50%', transform: 'translateY(-50%) rotate(-90deg)' }}>
-          {playerHandComponent(otherPlayersHands[1])}
-        </Flex>
-
-        <Flex style={{ ...rightHandStyle, position: 'absolute', right: '5%', top: '50%', transform: 'translateY(-50%) rotate(90deg)' }}>
-          {playerHandComponent(otherPlayersHands[2])}
+        <Flex>
+          {playerComponents}
         </Flex>
       </Flex>
     );

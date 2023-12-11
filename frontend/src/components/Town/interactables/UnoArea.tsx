@@ -26,7 +26,6 @@ import { useInteractable, useInteractableAreaController } from '../../../classes
 import useTownController from '../../../hooks/useTownController';
 import { GameResult, GameStatus, InteractableID } from '../../../types/CoveyTownSocket';
 import GameAreaInteractable from './GameArea';
-import { Card as UnoCardModel, Color, Value, PlayerHandsMap } from '../../../types/CoveyTownSocket';
 
 /**
  * The UnoArea component renders the Uno game area.
@@ -101,24 +100,7 @@ function UnoArea({ interactableID }: { interactableID: InteractableID }): JSX.El
     };
   }, [townController, gameAreaController, toast]);
 
-  type Player = {
-    id: string;
-    name: string;
-    isReady: boolean;
-  };
-  const playerComponent = ({ player, onReady }: { player: Player; onReady: (id: string) => void }) => {
-    return (
-      <div>
-        <p>{player.name}</p>
-        <button onClick={() => onReady(player.id)} disabled={player.isReady}>
-          {player.isReady ? 'Ready!' : 'Ready?'}
-        </button>
-      </div>
-    );
-  };
-
   const [showGame, setShowGame] = useState(false);
-  const [currentPlayer, setCurrentPlayer] = useState('Player 1');
 
   const startGame = () => {
     setShowGame(true);
