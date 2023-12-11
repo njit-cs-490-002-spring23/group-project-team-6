@@ -9,6 +9,9 @@ import UnoAreaController from '../../../classes/UnoAreaController';
 import PlayerController from '../../../classes/PlayerController';
 import UnoPlayer from '../../../../../townService/src/lib/UnoPlayer';
 import useTownController from '../../../hooks/useTownController';
+import { IVideoTrack } from '../../VideoCall/VideoFrontend/types';
+import Video from '../../VideoCall/VideoFrontend/components/VideoTrack/VideoTrack';
+
 
 type UnoTableProps = {
   children?: React.ReactNode;
@@ -67,9 +70,9 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
   const calculatePlayerPosition = (index: number, ourPlayerIndex: number, totalPlayers: number) => {
     const relativeIndex = ((index - ourPlayerIndex + totalPlayers) % totalPlayers);
     const angle = (2 * Math.PI) / totalPlayers;
-    const radius = 20; // Adjust this value as needed
+    const radius = 25; // Adjust this value as needed
     const x = 42.5 + radius * 1.5 * Math.sin(angle * relativeIndex);
-    const y = 55 + radius * Math.cos(angle * relativeIndex);
+    const y = 42.5 + radius * Math.cos(angle * relativeIndex);
     return { left: `${x}%`, top: `${y}%`,width: 'auto', height: 'auto',backgroundColor: 'transparent'};
   };
 
@@ -297,7 +300,7 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
          colorSquareComponent() : tableCardsComponent(tableCards)
         }
         </Flex> 
-        <Flex style={{...playerHandStyle, bottom: '10%'}} justify="center">
+        <Flex style={{...playerHandStyle, bottom: '0%'}} justify="center">
           {playerHandComponentButtons(ourHand)}
         </Flex>
         <Flex>
