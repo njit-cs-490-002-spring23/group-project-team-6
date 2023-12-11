@@ -17,7 +17,6 @@ import {
   Value,
   PlayerID,
   UnoGameDirection,
-  Direction,
 } from '../../types/CoveyTownSocket';
 import UnoPlayer from '../../lib/UnoPlayer';
 import Player from '../../lib/Player';
@@ -275,41 +274,31 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     if (playerIndex === -1) {
       throw new Error(PLAYER_NOT_IN_GAME_MESSAGE);
     }
-    this._players.splice(playerIndex, 1);
-    this._unoPlayers.splice(playerIndex, 1);
+    if (player.id === this.currentMovePlayer)
+      this.state = {
+        ...this.state,
+        currentMovePlayer: this._getNextPlayer()?.id,
+      }
+    this._unoPlayers = this._unoPlayers.filter(p => p.id !== player.id);
     const playersHandsArray: Card[][]= this.state.playersHands;
     const playerIdList: PlayerID[] = this.state.players;
-    playerIdList.splice(playerIndex, 1);
     playersHandsArray.splice(playerIndex, 1);
+    playerIdList.splice(playerIndex, 1);
     this.state = {
       ...this.state,
       playersHands: playersHandsArray,
       players: playerIdList,
     };
-    this.state = {
-      ...this.state,
-      currentMovePlayer: this._getNextPlayer()?.id,
-    }
     this._updatePlayerPositions();
-
-    if (this.state.status === 'IN_PROGRESS' && this._players.length < MIN_PLAYERS) {
+    this._players.forEach((_player: Player) => {
+      console.log(_player.userName);
+    });
+    if (this.state.status === 'IN_PROGRESS' && this._unoPlayers.length < MIN_PLAYERS) {
       this.state = {
         ...this.state,
         status: 'OVER',
+        winner: this._unoPlayers[0].id,
       }; 
-
-      if (this._players.length === 1) {
-        this.state = {
-          ...this.state,
-          winner: this._players[0].id,
-        }; 
-      } else {
-        this.state = {
-          ...this.state,
-          status: 'WAITING_TO_START',
-          winner: undefined,
-        };
-      }
     }
   }
 
@@ -335,6 +324,7 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
         for (const card of playerHand) {
           console.log(`Color: ${card.color}, Value: ${card.value}`);
         }
+        console.log("");
       }
       return true;
     }
@@ -446,6 +436,7 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
           for (const card of playerHand) {
             console.log(`Color: ${card.color}, Value: ${card.value}`);
           }
+          console.log("");
         }  
       }
     }

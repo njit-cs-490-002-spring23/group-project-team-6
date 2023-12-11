@@ -64,6 +64,34 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
     };
   }, [townController, gameAreaController, toast]);
 
+  const calculatePlayerPosition = (index: number, ourPlayerIndex: number, totalPlayers: number) => {
+    const relativeIndex = ((index - ourPlayerIndex + totalPlayers) % totalPlayers);
+    const angle = (2 * Math.PI) / totalPlayers;
+    const radius = 20; // Adjust this value as needed
+    const x = 42.5 + radius * 1.5 * Math.sin(angle * relativeIndex);
+    const y = 55 + radius * Math.cos(angle * relativeIndex);
+    return { left: `${x}%`, top: `${y}%`,width: 'auto', height: 'auto',backgroundColor: 'transparent'};
+  };
+
+  const ourPlayerIndex = players.findIndex(player => player.id === townController.ourPlayer.id);
+
+  const playerComponents = players.map((player, index) => {
+    const position = calculatePlayerPosition(index, ourPlayerIndex, players.length);
+    if (index !== ourPlayerIndex && playersHands && playersHands[index] !== undefined){
+      return (
+        <div key={player.id} style={{ position: 'absolute', ...position }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ marginRight: '20px' }}>{player.userName}</div>
+            <div style={{ position: 'relative', display: 'inline-block' }}>
+              <div style={{ position: 'absolute', width: '40px', height: '40px', borderRadius: '50%', border: '2px solid #000', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}></div>
+              <div style={{ position: 'relative', zIndex: 1 }}>{playersHands[index].length}</div>
+            </div>
+          </div>       
+        </div>
+      );
+    }
+  });
+
   const playerHandComponentButtons = (listOfCards: Card[]) => {
     const buttonStyle = {
       width: '100%', // Adjust the width as needed
@@ -163,7 +191,6 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
     );
   };
 
-  const [otherPlayersHands] = useState<Array<UnoCard[]>>(new Array(3).fill(new Array(4).fill({ src: CARD_BACK_IMAGE })));
   const tableStyle: React.CSSProperties = {
     width: '90%',
     height: '325px',
@@ -186,21 +213,8 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
     position: 'absolute',
     // Adjust these values to position the player hands correctly
   };
-  const leftHandStyle: React.CSSProperties = {
-    position: 'absolute',
-    top: '60%',
-    left: '10%', // Adjust this value as needed
-    transform: 'rotate(-90deg)', // Rotate the hand to align with the table's curve
-  };
 
-  const rightHandStyle: React.CSSProperties = {
-    position: 'absolute',
-    top: '60%',
-    right: '19%', // Adjust this value as needed
-    transform: 'rotate(90deg)', // Rotate the hand to align with the table's curve
-  };
-  const cardSize = '30px'; // For example, '50px' for smaller cards
-    if (gameStatus === 'IN_PROGRESS') {
+  if (gameStatus === 'IN_PROGRESS') {
     return (
       <Flex direction="column" align="center" style={tableStyle}>
         <Flex style={deckStyle}>
@@ -209,31 +223,14 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
          colorChange ? 
          colorSquareComponent() : tableCardsComponent(tableCards)
         }
-        </Flex>
-
+        </Flex> 
         <Flex style={{...playerHandStyle, bottom: '10%'}} justify="center">
           {playerHandComponentButtons(ourHand)}
         </Flex>
-
-        <Flex style={{...playerHandStyle, top: '35%'}} justify="center">
-          {otherPlayersHands[0].map((card, cardIndex) => (
-            <Image key={cardIndex} src={card.src} boxSize={cardSize}/>
-          ))}
+        <Flex>
+        {playerComponents}
         </Flex>
 
-        {/* Left hand */}
-        <Flex style={leftHandStyle} justify="center" wrap="wrap">
-          {otherPlayersHands[1].map((card, cardIndex) => (
-            <Image key={cardIndex} src={card.src} boxSize={cardSize}/>
-          ))}
-        </Flex>
-
-        {/* Right hand */}
-        <Flex style={rightHandStyle} justify="center" wrap="wrap">
-          {otherPlayersHands[2].map((card, cardIndex) => (
-            <Image key={cardIndex} src={card.src} boxSize={cardSize}/>
-          ))}
-        </Flex>
       </Flex>
     );
   }
