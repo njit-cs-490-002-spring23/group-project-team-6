@@ -244,26 +244,6 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
       </>
     );
   };
-  
-  const playerHandComponent = (listOfCards: Card[]) => {
-    const cardStyle = {
-      width: '30px',
-      height: '40px',
-    };
-
-    return (
-      <div className="player-hand" style={{ display: 'flex'}}>
-        {listOfCards.map((card: Card) => (
-          <Image
-            key={card.src}
-            src={card.src}
-            alt={card.color}
-            style={cardStyle}
-          ></Image>
-        ))}
-      </div>
-    );
-  };
 
   const tableStyle: React.CSSProperties = {
     position: 'relative',
@@ -285,7 +265,7 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
   };
 
   const playerHandStyle: React.CSSProperties = {
-    position: 'relative',
+    position: 'absolute',
   };
 
   if (gameStatus === 'IN_PROGRESS') {
