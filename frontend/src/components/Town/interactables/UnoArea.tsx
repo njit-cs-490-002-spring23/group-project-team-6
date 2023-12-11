@@ -62,9 +62,14 @@ function UnoArea({ interactableID }: { interactableID: InteractableID }): JSX.El
   const [players, setplayers] = useState<PlayerController[]>(gameAreaController.players);
   const [whoseTurn, setWhoseTurn] = useState<PlayerController | undefined>(gameAreaController.whoseTurn);
   const canDealCards = players.length >= 2;
+  const [readyPlayerIDs, setReadyPlayerIDs] = useState<PlayerID[]>([]);
+  type PlayerID = string;
 
   const toast = useToast();
   useEffect(() => {
+    const handleReadyPlayersListUpdated = (updatedReadyPlayerIDs: PlayerID[]) => {
+      setReadyPlayerIDs(updatedReadyPlayerIDs);
+    };
     const updateGameState = () => {
       setGameStatus(gameAreaController.status || 'WAITING_TO_START');
       setplayers(gameAreaController.players);
@@ -94,8 +99,10 @@ function UnoArea({ interactableID }: { interactableID: InteractableID }): JSX.El
       }
     };
     gameAreaController.addListener('gameEnd', onGameEnd);
+    gameAreaController.addListener('readyPlayersListUpdated', handleReadyPlayersListUpdated);
     return () => {
       gameAreaController.removeListener('gameEnd', onGameEnd);
+      gameAreaController.removeListener('readyPlayersListUpdated', handleReadyPlayersListUpdated);
       gameAreaController.removeListener('gameUpdated', updateGameState);
     };
   }, [townController, gameAreaController, toast]);
@@ -178,13 +185,31 @@ function UnoArea({ interactableID }: { interactableID: InteractableID }): JSX.El
         <div style={{ width: '100%' }}>
           {showGame ? (
             <>
-              <UnoTable interactableID={interactableID} />
+              <UnoTable readyPlayerIDs={readyPlayerIDs} interactableID={interactableID} />
             </>
           ) : (
             <p style={{ fontSize: '20px', fontWeight: 'bold' }}>Waiting Room</p>
           )}
         </div>
       </Flex>
+      <Flex>
+        { readyPlayerIDs.length >= 1 && gameStatus === 'WAITING_TO_START' &&
+          <div style={{
+            padding: '10px',
+            borderRadius: '5px',
+            border: '2px dashed black',
+            backgroundColor: '#f9f9f9',
+            color: '#333',
+            boxShadow: '0 2px 5px rgba(0,0,0,0.15)',
+            textAlign: 'center',
+            fontWeight: 'bold',
+            fontSize: '1.5em',
+          }}>
+            You are Ready!
+          </div>
+        }
+      </Flex>
+      
     </Container>
   );
 }

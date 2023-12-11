@@ -43,6 +43,8 @@ export default class UnoAreaController extends GameAreaController<UnoGameState, 
 
   public justPlayedPlayerID: PlayerID = "";
 
+  public _readyPlayerIDs: Set<PlayerID> = new Set();
+
   /**
    * Returns the hand of the player.
    */
@@ -60,6 +62,20 @@ public getCurrentCard(): Card | undefined {
 public isActive(): boolean {
     return this._model.game?.state.status === 'IN_PROGRESS';
   }
+
+  public markPlayerReady(playerID: PlayerID): void {
+    this._readyPlayerIDs.add(playerID);
+    this.updateAndEmitReadyPlayers();
+  }
+
+  public getReadyPlayerIDs(): PlayerID[] {
+    return Array.from(this._readyPlayerIDs);
+  }
+
+  public updateAndEmitReadyPlayers(): void {
+    this.emit('readyPlayersListUpdated', this.getReadyPlayerIDs());
+  }
+  
 
 /*public getNextPlayer(): PlayerController {
   return this.occupants.find(eachOccupant => eachOccupant.id === this._model.game?.nextPlayerID);
@@ -220,6 +236,10 @@ protected _updateFrom( newModel: GameArea<UnoGameState>): void {
       type: 'ReadyUp',
     });
     this._instanceID = gameID;
+    const playerID = this._townController.ourPlayer.id;
+    this._readyPlayerIDs.add(playerID);
+    this.emit('playerReady', this._townController.ourPlayer.id);
+    this.updateAndEmitReadyPlayers();
   }
 
   public async changeColor(color: Color) {

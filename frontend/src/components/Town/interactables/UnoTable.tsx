@@ -12,6 +12,7 @@ import useTownController from '../../../hooks/useTownController';
 
 type UnoTableProps = {
   children?: React.ReactNode;
+  readyPlayerIDs: string[];
 };
 
 export const BASE_PATH = '/assets/images/uno_assets_2d/PNGs/small';
@@ -309,23 +310,31 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
   else {
     return (
       <Flex direction="column" align="center" style={tableStyle}>
-      <Button 
-        onClick={async () => {
-          try {
-            await gameAreaController.readyUp();
-          } catch (err) {
-            toast({
-              title: 'Error readying Up',
-              description: (err as Error).toString(),
-              status: 'error',
-            });
-          }
-        }} 
-        variant="outline" 
-        colorScheme="teal" 
-        size="lg">
-        Ready Up
-      </Button>
+        {
+          gameStatus === 'WAITING_TO_START' &&
+          <Button 
+            onClick={async () => {
+              try {
+                await gameAreaController.readyUp();
+                toast({
+                  title: 'You are ready!',
+                  description: 'You Have Readied Up',
+                  status: 'success',
+                });
+              } catch (err) {
+                toast({
+                  title: 'Error readying Up',
+                  description: (err as Error).toString(),
+                  status: 'error',
+                });
+              }
+            }} 
+            variant="outline" 
+            colorScheme="teal" 
+            size="lg">
+            Ready Up
+          </Button>
+        }
       {
         players.length > 1 &&
         <Button 
