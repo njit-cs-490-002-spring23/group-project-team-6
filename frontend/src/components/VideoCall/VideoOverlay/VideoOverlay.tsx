@@ -16,11 +16,15 @@ import useLocalVideoToggle from '../VideoFrontend/hooks/useLocalVideoToggle/useL
 import './VideoGrid.module.scss';
 import MediaErrorSnackbar from '../VideoFrontend/components/PreJoinScreens/MediaErrorSnackbar/MediaErrorSnackbar';
 import useTownController from '../../../hooks/useTownController';
+import UnoAreaController from '../../../classes/UnoAreaController';
+import { useInteractableAreaController } from '../../../classes/TownController';
+import { InteractableID } from '../../../types/CoveyTownSocket';
 
 const Container = styled('div')({
   // display: 'grid',
   // gridTemplateRows: '1fr auto',
 });
+
 
 const Main = styled('main')(({ theme: _theme }: { theme: Theme }) => ({
   overflow: 'hidden',
@@ -36,13 +40,15 @@ interface Props {
   hexColour?: string;
   preferredMode: 'sidebar' | 'fullwidth';
   onPresentingChanged?(presenting: boolean): void;
+  ID: InteractableID;
+  gameStatus: string;
 }
 
 export default function VideoGrid(props: Props) {
   const { room } = useVideoContext();
   const roomState = useRoomState();
   const coveyTownController = useTownController();
-
+  const gameStatus = props.gameStatus;
   const [isAudioEnabled, toggleAudioEnabled] = useLocalAudioToggle();
   const [isVideoEnabled, toggleVideoEnabled] = useLocalVideoToggle();
   const unmountRef = useRef<() => void>();
@@ -109,24 +115,28 @@ export default function VideoGrid(props: Props) {
     }
     existingRoomRef.current = room || undefined;
   }, [sid, room, coveyRoom]);
-
+  const i : integer = 0;
   return (
     <>
       <Prompt when={roomState !== 'disconnected'} message="Are you sure you want to leave the video room?" />
       <Container style={{ height: '100%' }}>
-        {roomState === 'disconnected' ? (
-          <div>Connecting...</div>
-        ) : (
-          <Main style={{ paddingBottom: '90px' }}>
-            <ReconnectingNotification />
-            <MobileTopMenuBar />
-            <Container className="videochat-container">
-              <Room />
-            </Container>
-            <MenuBar />
-          </Main>
+        {gameStatus === 'IN_PROGRESS' && (
+          <>
+            {roomState === 'disconnected' && gameStatus !== 'IN_PROGRESS' ? (
+              <div>{roomState}</div>
+            ) : (
+              <Main style={{ paddingBottom: '90px' }}>
+                <ReconnectingNotification />
+                <MobileTopMenuBar />
+                <Container className="videochat-container">
+                  <Room />
+                </Container>
+                <MenuBar />
+              </Main>
+            )}
+            <MediaErrorSnackbar error={mediaError} />
+          </>
         )}
-        <MediaErrorSnackbar error={mediaError} />
       </Container>
     </>
   );

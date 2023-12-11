@@ -9,7 +9,13 @@ import UnoAreaController from '../../../classes/UnoAreaController';
 import PlayerController from '../../../classes/PlayerController';
 import UnoPlayer from '../../../../../townService/src/lib/UnoPlayer';
 import useTownController from '../../../hooks/useTownController';
-
+import { useAppState } from '../../VideoCall/VideoFrontend/state';
+import useConnectionOptions from '../../VideoCall/VideoFrontend/utils/useConnectionOptions/useConnectionOptions';
+import VideoGrid from '../../VideoCall/VideoOverlay/VideoOverlay';
+import { VideoProvider } from '../../VideoCall/VideoFrontend/components/VideoProvider';
+import Participant from '../../VideoCall/VideoFrontend/components/Participant/Participant';
+import MainParticipant from '../../VideoCall/VideoFrontend/components/MainParticipant/MainParticipant';
+import VideoIntegration from '../../VideoCall/VideoOverlay/VideoInGame';
 type UnoTableProps = {
   children?: React.ReactNode;
 };
@@ -37,6 +43,12 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
   ]);
   const [colorChange, setColorChange] = useState(gameAreaController.colorChange);
   const [justPlayedPlayerID, setjustPlayedPlayerID] = useState(gameAreaController.justPlayedPlayerID);
+  const { error, setError } = useAppState();
+  const connectionOptions = useConnectionOptions();
+  const onDisconnect = useCallback(() => {
+    townController?.disconnect();
+  }, [townController]);
+
 
   const toast = useToast();
   useEffect(() => {
@@ -284,9 +296,12 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
          colorSquareComponent() : tableCardsComponent(tableCards)
         }
         </Flex>
-        <Flex style={{ ...playerHandStyle, padding: '2px', position: 'absolute', bottom: '10%', alignItems: "center", backgroundColor: 'rgba(0,0,0,.7)'}}>
+
+          <Flex direction='column' align='center' position='absolute' bottom='10%'>
           {playerHandComponentButtons(ourHand)}
-        </Flex>
+          <VideoIntegration status={gameAreaController.status} />
+          </Flex>
+
 
         <Flex style={{ ...topHandStyle, position: 'absolute', top: '10%' }}>
           {playerHandComponent(otherPlayersHands[0])}
