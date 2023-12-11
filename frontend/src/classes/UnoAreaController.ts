@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import {
   GameArea,
   GameStatus,
@@ -12,14 +11,8 @@ import {
   PlayerHands2DArray
 } from '../types/CoveyTownSocket';
 import {BASE_PATH, CARD_BACK_IMAGE} from '../components/Town/interactables/UnoTable';
-import Game from '../../../townService/src/town/games/Game';
 import PlayerController from './PlayerController';
 import GameAreaController, { GameEventTypes } from './GameAreaController';
-import TownController from './TownController';
-import UnoPlayer from '../../../townService/src/lib/UnoPlayer';
-import { UnoCard } from './UnoCards';
-
-
 
 export const PLAYER_NOT_IN_UNO_GAME_ERROR = 'Player is not in Uno game';
 export const NO_UNO_GAME_IN_PROGRESS_ERROR = 'No Uno game in progress';
@@ -212,16 +205,6 @@ private _playCard(player: PlayerController, card: Card): void {
    */
 protected _updateFrom( newModel: GameArea<UnoGameState>): void {
     super._updateFrom(newModel);
-    const newState = newModel.game;
-    if(newState){
-      //UPDATE DECKOFCARDS PLAYERHANDS CURRENT CARD TURN
-      const newDeck : DeckOfCards = [];
-      const newPlayerHands : DeckOfCards = [];
-      if(newState.state.currentCardValue != this.getCurrentCard()?.value && newState.state.currentColor != this.getCurrentCard()?.color)
-        this.emit("topCardChanged",this.getCurrentCard());
-      /// deck
-
-    }
   }
 
   get winner(): PlayerController | undefined {
