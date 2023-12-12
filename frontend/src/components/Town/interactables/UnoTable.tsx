@@ -117,7 +117,7 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
             key={card.src}
             style={buttonStyle} 
             className="card-button" 
-            disabled={!isOurTurn}
+            disabled={!isOurTurn || colorChange}
             onClick={async () => {
               const move: UnoMove = {cardPlaced: card};
               try { 
