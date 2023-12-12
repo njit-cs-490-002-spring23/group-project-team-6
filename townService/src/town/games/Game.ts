@@ -104,7 +104,6 @@ export default abstract class Game<StateType extends GameState, MoveType> {
   }
 
   public toModel(): GameInstance<StateType> {
-    console.log("game.toModel() called");
     return {
       state: this._state,
       id: this.id,

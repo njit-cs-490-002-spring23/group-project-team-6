@@ -290,9 +290,6 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
       players: playerIdList,
     };
     this._updatePlayerPositions();
-    this._players.forEach((_player: Player) => {
-      console.log(_player.userName);
-    });
     if (this.state.status === 'IN_PROGRESS' && this._unoPlayers.length < MIN_PLAYERS) {
       this.state = {
         ...this.state,
@@ -320,12 +317,6 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
         ...this.state,
         status: 'IN_PROGRESS',
       };
-      for (const playerHand of this.state.playersHands) {
-        for (const card of playerHand) {
-          console.log(`Color: ${card.color}, Value: ${card.value}`);
-        }
-        console.log("");
-      }
       return true;
     }
     return false;
@@ -432,12 +423,6 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
         }
         const indexToRemove = player.cardsInHand.findIndex((card) => card.color === move.cardPlaced.color && card.value === move.cardPlaced.value);
         player.cardsInHand.splice(indexToRemove, 1);
-        for (const playerHand of this.state.playersHands) {
-          for (const card of playerHand) {
-            console.log(`Color: ${card.color}, Value: ${card.value}`);
-          }
-          console.log("");
-        }  
       }
     }
     this._checkIfWinningMove();
