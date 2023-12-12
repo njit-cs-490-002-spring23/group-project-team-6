@@ -154,6 +154,7 @@ describe('UnoGame', () => {
           game.playerReadyUp(unoPlayer4)
           game.playerReadyUp(unoPlayer5)
           game.playerReadyUp(unoPlayer6)
+          game.shuffleAndDealCards();
           game.leave(player1);
           game.leave(player2);
           game.leave(player3);
@@ -193,11 +194,13 @@ describe('UnoGame', () => {
       game.playerReadyUp(unoPlayer1);
       game.playerReadyUp(unoPlayer2);
       game.playerReadyUp(unoPlayer3);
+      game.shuffleAndDealCards();
       expect(unoPlayer1.cardsInHand.length).toEqual(0);
       expect(unoPlayer2.cardsInHand.length).toEqual(0);
       expect(unoPlayer3.cardsInHand.length).toEqual(0);
       expect(unoPlayer4.cardsInHand.length).toEqual(0);
       game.playerReadyUp(unoPlayer4);
+      game.shuffleAndDealCards();
       expect(unoPlayer1.cardsInHand.length).toEqual(7);
       expect(unoPlayer2.cardsInHand.length).toEqual(7);
       expect(unoPlayer3.cardsInHand.length).toEqual(7);
@@ -222,6 +225,7 @@ describe('UnoGame', () => {
       game.playerReadyUp(unoPlayer2);
       game.playerReadyUp(unoPlayer3);
       game.playerReadyUp(unoPlayer4);
+      game.shuffleAndDealCards();
       const player1Move1UnoMove: UnoMove = {
         cardPlaced: {
           color: 'Red', 
@@ -298,6 +302,7 @@ describe('UnoGame', () => {
       game.playerReadyUp(unoPlayer2);
       game.playerReadyUp(unoPlayer3);
       game.playerReadyUp(unoPlayer4);
+      game.shuffleAndDealCards();
       const player1Move1UnoMove: UnoMove = {
         cardPlaced: {
           color: 'Red', 
@@ -366,6 +371,7 @@ describe('UnoGame', () => {
       game.playerReadyUp(unoPlayer2);
       game.playerReadyUp(unoPlayer3);
       game.playerReadyUp(unoPlayer4);
+      game.shuffleAndDealCards();
       expect(game.state.currentMovePlayer).toBe(player1.id);
       const player1Move1UnoMove: UnoMove = {
         cardPlaced: {
@@ -448,6 +454,7 @@ describe('UnoGame', () => {
       game.playerReadyUp(unoPlayer2);
       game.playerReadyUp(unoPlayer3);
       game.playerReadyUp(unoPlayer4);
+      game.shuffleAndDealCards();
       expect(game.state.currentMovePlayer).toBe(player1.id);
       const player1Move1UnoMove: UnoMove = {
         cardPlaced: {
@@ -542,6 +549,7 @@ describe('UnoGame', () => {
       game.playerReadyUp(unoPlayer2);
       game.playerReadyUp(unoPlayer3);
       game.playerReadyUp(unoPlayer4);
+      game.shuffleAndDealCards();
       expect(game.state.currentMovePlayer).toBe(player1.id);
       const player1Move1UnoMove: UnoMove = {
         cardPlaced: {
@@ -653,6 +661,7 @@ describe('UnoGame', () => {
       game.playerReadyUp(unoPlayer2);
       game.playerReadyUp(unoPlayer3);
       game.playerReadyUp(unoPlayer4);
+      game.shuffleAndDealCards();
       expect(game.state.currentMovePlayer).toBe(player1.id);
       const player1Move1UnoMove: UnoMove = {
         cardPlaced: {
@@ -749,7 +758,7 @@ describe('UnoGame', () => {
       game.updateColor("Blue");
       expect(game.state.currentCardValue).toEqual('Wild Draw Four');
       expect(game.state.currentColor).toEqual('Blue');
-      expect(unoPlayer4.cardsInHand.length).toEqual(13);
+      expect(unoPlayer4.cardsInHand.length).toEqual(12);
       expect(game.state.currentMovePlayer).toBe(player3.id);
       expect(game.state.direction).toEqual('Clockwise');
       expect(game.state.mostRecentMove).toBe(player1Move3UnoMove);
