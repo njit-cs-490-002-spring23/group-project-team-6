@@ -57,6 +57,10 @@ export default class UnoAreaController extends GameAreaController<UnoGameState, 
 
   public _readyPlayerIDs: Set<PlayerID> = new Set();
 
+  public _readyPlayerIDs: Set<PlayerID> = new Set();
+
+  private _readyStatus: Record<PlayerID, boolean> = {};
+
   /**
    * Returns the hand of the player.
    */
@@ -78,10 +82,12 @@ export default class UnoAreaController extends GameAreaController<UnoGameState, 
     return this._model.game?.state.status === 'IN_PROGRESS';
   }
 
+
   /**
    * Marks a player as ready for the game.
    * @param {PlayerID} playerID - The ID of the player to mark as ready.
    */
+
   public markPlayerReady(playerID: PlayerID): void {
     this._readyPlayerIDs.add(playerID);
     this.updateAndEmitReadyPlayers();

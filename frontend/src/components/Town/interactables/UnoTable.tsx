@@ -295,6 +295,7 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
       </>
     );
   };
+
   /**
    * Styles the component for the Uno table.
    */
@@ -320,9 +321,11 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
   const playerHandStyle: React.CSSProperties = {
     position: 'absolute',
   };
+
   /**
    * Handles the click event for the "Ready Up" button, toggling the player's ready status.
    */
+
   const handleReadyClick = async () => {
     try {
       await gameAreaController.readyUp();
