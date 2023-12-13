@@ -65,6 +65,7 @@ function UnoArea({ interactableID }: { interactableID: InteractableID }): JSX.El
   const [readyPlayerIDs, setReadyPlayerIDs] = useState<PlayerID[]>([]);
   type PlayerID = string;
 
+
   const toast = useToast();
   useEffect(() => {
     const handleReadyPlayersListUpdated = (updatedReadyPlayerIDs: PlayerID[]) => {
@@ -191,25 +192,7 @@ function UnoArea({ interactableID }: { interactableID: InteractableID }): JSX.El
             <p style={{ fontSize: '20px', fontWeight: 'bold' }}>Waiting Room</p>
           )}
         </div>
-      </Flex>
-      <Flex>
-        { readyPlayerIDs.length >= 1 && gameStatus === 'WAITING_TO_START' &&
-          <div style={{
-            padding: '10px',
-            borderRadius: '5px',
-            border: '2px dashed black',
-            backgroundColor: '#f9f9f9',
-            color: '#333',
-            boxShadow: '0 2px 5px rgba(0,0,0,0.15)',
-            textAlign: 'center',
-            fontWeight: 'bold',
-            fontSize: '1.5em',
-          }}>
-            You are Ready!
-          </div>
-        }
-      </Flex>
-      
+      </Flex>      
     </Container>
   );
 }

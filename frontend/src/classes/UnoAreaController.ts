@@ -18,6 +18,7 @@ export const PLAYER_NOT_IN_UNO_GAME_ERROR = 'Player is not in Uno game';
 export const NO_UNO_GAME_IN_PROGRESS_ERROR = 'No Uno game in progress';
 export const INVALID_CARD_PLAYED_ERROR = "Card can not be played";
 export const NO_GAME_IN_PROGRESS_ERROR = 'No game in progress';
+export const READY_STATUS = false;
 export const noCard: Card = {
   color: "None",
   value: "None",
@@ -44,6 +45,8 @@ export default class UnoAreaController extends GameAreaController<UnoGameState, 
   public justPlayedPlayerID: PlayerID = "";
 
   public _readyPlayerIDs: Set<PlayerID> = new Set();
+
+  private _readyStatus: Record<PlayerID, boolean> = {};
 
   /**
    * Returns the hand of the player.
@@ -75,12 +78,7 @@ public isActive(): boolean {
   public updateAndEmitReadyPlayers(): void {
     this.emit('readyPlayersListUpdated', this.getReadyPlayerIDs());
   }
-  
 
-/*public getNextPlayer(): PlayerController {
-  return this.occupants.find(eachOccupant => eachOccupant.id === this._model.game?.nextPlayerID);
-}
-*/
 
 get playersHands(): PlayerHands2DArray | undefined {
   return this._model.game?.state.playersHands;
@@ -232,13 +230,19 @@ protected _updateFrom( newModel: GameArea<UnoGameState>): void {
   }
 
   public async readyUp() {
+    const newReadyStatus = !READY_STATUS;
     const { gameID } = await this._townController.sendInteractableCommand(this.id, {
       type: 'ReadyUp',
     });
     this._instanceID = gameID;
     const playerID = this._townController.ourPlayer.id;
-    this._readyPlayerIDs.add(playerID);
-    this.emit('playerReady', this._townController.ourPlayer.id);
+    if (newReadyStatus) {
+      this._readyPlayerIDs.add(playerID);
+    } else {
+      this._readyPlayerIDs.delete(playerID);
+    }
+    this.emit('readyStatusChanged', this._readyPlayerIDs);
+    this.emit('playerReady', playerID);
     this.updateAndEmitReadyPlayers();
   }
 
