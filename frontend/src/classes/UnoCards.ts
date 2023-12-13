@@ -16,9 +16,9 @@ export class UnoCard implements Card {
     this.src = src;
   }
 
+  // A card can be played if either the color or the value matches the top card on the play stack,
+  // or if the card is a Wild card.
   canPlayOn(topCard: Card): boolean {
-    // A card can be played if either the color or the value matches the top card on the play stack,
-    // or if the card is a Wild card.
     return (
       this.color === topCard.color ||
       this.value === topCard.value ||
