@@ -1,3 +1,9 @@
+/*
+ * This section of code is adapted from or inspired by code available on GitHub:
+ * Repository: https://github.com/neu-se/covey.town
+ * File: covey.town/townService/src/town/games/TicTacToeBoard.ts
+ * Author: Jonathan Bell
+ */
 /* eslint-disable react-hooks/rules-of-hooks */
 import React, { useEffect, useState } from 'react';
 import { Image, Flex, Button, useToast } from '@chakra-ui/react';
@@ -10,11 +16,26 @@ import useTownController from '../../../hooks/useTownController';
 
 type UnoTableProps = {
   children?: React.ReactNode;
+  readyPlayerIDs: string[];
 };
 
 export const BASE_PATH = '/assets/images/uno_assets_2d/PNGs/small';
 export const CARD_BACK_IMAGE = '/assets/images/uno_assets_2d/PNGs/small/card_back.png';
 
+/**
+ * A component that renders the Uno table
+ *
+ * Renders the Uno table. The table is an oval with a deck of cards in the center and the players' hands.
+ *
+ * The table is re-rendered whenever the table changes. The table changes whenever a move is made.
+ * 
+ * If the current player is in the game, then they are able to ready themselves and deal cards when more than 1 player is in the game.
+ * During the game, the player is able to draw a card if they cannot play a card. If there is an error making a move, then a toast will be
+ * displayed with the error message as the description of the toast. If it is not the current player's
+ * turn, then the player's hands will be disabled and not able to be interacted with.
+ *
+ * @param gameAreaController the controller for the Uno game
+ */
 const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = ({ interactableID }) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const gameAreaController = useInteractableAreaController<UnoAreaController>(interactableID);
@@ -32,8 +53,13 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
   ]);
   const [colorChange, setColorChange] = useState(gameAreaController.colorChange);
   const [justPlayedPlayerID, setjustPlayedPlayerID] = useState(gameAreaController.justPlayedPlayerID);
+  const [isReady, setIsReady] = useState(false);
+
 
   const toast = useToast();
+  /**
+   * Updates the game state based on changes from the game area controller.
+   */
   useEffect(() => {
     const updateGameState = () => {
       setGameStatus(gameAreaController.status || 'WAITING_TO_START');
@@ -56,6 +82,14 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
     };
   }, [townController, gameAreaController, toast, currentCardValue, currentColor, colorChange]);
 
+  /**
+   * Calculates the position of each player on the Uno table.
+   * 
+   * @param {number} index - The index of the player.
+   * @param {number} ourPlayerIndex - The index of 'our' player.
+   * @param {number} totalPlayers - The total number of players.
+   * @returns {object} The style object containing position properties.
+   */
   const calculatePlayerPosition = (index: number, ourPlayerIndex: number, totalPlayers: number) => {
     const relativeIndex = ((index - ourPlayerIndex + totalPlayers) % totalPlayers);
     const angle = (2 * Math.PI) / totalPlayers;
@@ -66,6 +100,9 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
   };
 
 
+  /**
+   * Renders the components representing each player on the Uno table.
+   */
   const playerComponents = players.map((player, index) => {
     const ourPlayerIndex = players.findIndex(_player => _player.id === townController.ourPlayer.id);
     const position = calculatePlayerPosition(index, ourPlayerIndex, players.length);
@@ -84,6 +121,11 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
     }
   });
 
+  /**
+   * Renders the buttons for each card in the player's hand.
+   * 
+   * @param {Card[]} listOfCards - The list of cards in the player's hand.
+   */
   const playerHandComponentButtons = (listOfCards: Card[]) => {
     const cardStyle = {
       width: '37.5px',
@@ -116,6 +158,7 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
                   title: "Error Making Move",
                   description: (e as Error).toString(),
                   status: 'error',
+                  duration: 1000,
                 });
               }
             }}>
@@ -150,6 +193,11 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
     )
   }
 
+  /**
+   * Renders the components representing the cards on the table.
+   * 
+   * @param {Card[]} _tableCards - The list of cards on the table.
+   */
   const tableCardsComponent = (_tableCards: Card[]) => {
     const cardStyle = {
       width: '45px',
@@ -182,6 +230,7 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
                 title: "Error Drawing Card",
                 description: (e as Error).toString(),
                 status: 'error',
+                duration: 1000,
               });
             }
           }}>
@@ -206,6 +255,9 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
     zIndex: 1000,
   };
 
+  /**
+   * Renders the component for selecting a color when a 'Wild' card is played.
+   */
   const colorSquareComponent = () => {
     const colors = ['yellow', 'blue', 'red', 'green'];
   
@@ -263,7 +315,10 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
       </>
     );
   };
-  
+
+  /**
+   * Styles the component for the Uno table.
+   */
   const tableStyle: React.CSSProperties = {
     position: 'relative',
     width: '90%',
@@ -284,9 +339,36 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
   };
 
   const playerHandStyle: React.CSSProperties = {
-    position: 'relative',
+    position: 'absolute',
   };
 
+  /**
+   * Handles the click event for the "Ready Up" button, toggling the player's ready status.
+   */
+
+  const handleReadyClick = async () => {
+    try {
+      await gameAreaController.readyUp();
+      setIsReady(!isReady);
+      toast({
+        title: isReady ? 'You are not ready!' : 'You are ready!',
+        description: isReady ? 'You Have Unreadied' : 'You Have Readied Up',
+        status: 'success',
+        duration: 1000,
+      });
+    } catch (err) {
+      toast({
+        title: 'Error readying Up',
+        description: (err as Error).toString(),
+        status: 'error',
+        duration: 1000,
+      });
+    }
+  };
+  const buttonStyle = {
+    backgroundColor: isReady ? 'green' : 'red',
+    color: 'white',
+  };
   if (gameStatus === 'IN_PROGRESS') {
     return (
       <Flex style={tableStyle}>
@@ -297,10 +379,10 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
          colorSquareComponent() : tableCardsComponent(tableCards)
         }
         </Flex> 
-        <Flex style={{...playerHandStyle, bottom: '0%'}} justify="center">
+        <Flex style={{...playerHandStyle, bottom: '0%', backgroundColor: 'rgba(0,0,0,.7)'}} justify="center">
           {playerHandComponentButtons(ourHand)}
         </Flex>
-        <Flex>
+        <Flex style={{ position: 'absolute', top: '10%'}}>
           {playerComponents}
         </Flex>
         {colorChangeMessageComponent()}
@@ -310,23 +392,17 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
   else {
     return (
       <Flex direction="column" align="center" style={tableStyle}>
-      <Button 
-        onClick={async () => {
-          try {
-            await gameAreaController.readyUp();
-          } catch (err) {
-            toast({
-              title: 'Error readying Up',
-              description: (err as Error).toString(),
-              status: 'error',
-            });
-          }
-        }} 
-        variant="outline" 
-        colorScheme="teal" 
-        size="lg">
-        Ready Up
-      </Button>
+        {
+          gameStatus === 'WAITING_TO_START' &&
+          <Button 
+            onClick={handleReadyClick} 
+            style={buttonStyle}
+            variant="outline" 
+            colorScheme="teal" 
+            size="lg">
+            {isReady ? 'Unready' : 'Ready Up'}
+          </Button>
+        }
       {
         players.length > 1 &&
         <Button 
@@ -338,6 +414,7 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
                 title: 'Error Dealing Cards',
                 description: (err as Error).toString(),
                 status: 'error',
+                duration: 1000,
               });
             }
           }} 

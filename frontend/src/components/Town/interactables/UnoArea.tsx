@@ -1,3 +1,9 @@
+/*
+ * This section of code is adapted from or inspired by code available on GitHub:
+ * Repository: https://github.com/neu-se/covey.town
+ * File: covey.town/townService/src/town/games/TicTacToeArea.ts
+ * Author: Jonathan Bell
+ */
 import {
   Accordion,
   AccordionButton,
@@ -61,9 +67,22 @@ function UnoArea({ interactableID }: { interactableID: InteractableID }): JSX.El
   const [joiningGame, setJoiningGame] = useState(false);
   const [players, setplayers] = useState<PlayerController[]>(gameAreaController.players);
   const [whoseTurn, setWhoseTurn] = useState<PlayerController | undefined>(gameAreaController.whoseTurn);
+  const [readyPlayerIDs, setReadyPlayerIDs] = useState<PlayerID[]>([]);
+  type PlayerID = string;
+
 
   const toast = useToast();
+
+  /**
+   * Initializes and manages the state and subscriptions for the Uno game area.
+   * 
+   * This function sets up listeners for game updates and player readiness. It manages state for game
+   * status, player list, and game control actions like joining and starting the game.
+   */
   useEffect(() => {
+    const handleReadyPlayersListUpdated = (updatedReadyPlayerIDs: PlayerID[]) => {
+      setReadyPlayerIDs(updatedReadyPlayerIDs);
+    };
     const updateGameState = () => {
       setGameStatus(gameAreaController.status || 'WAITING_TO_START');
       setplayers(gameAreaController.players);
@@ -93,8 +112,10 @@ function UnoArea({ interactableID }: { interactableID: InteractableID }): JSX.El
       }
     };
     gameAreaController.addListener('gameEnd', onGameEnd);
+    gameAreaController.addListener('readyPlayersListUpdated', handleReadyPlayersListUpdated);
     return () => {
       gameAreaController.removeListener('gameEnd', onGameEnd);
+      gameAreaController.removeListener('readyPlayersListUpdated', handleReadyPlayersListUpdated);
       gameAreaController.removeListener('gameUpdated', updateGameState);
     };
   }, [townController, gameAreaController, toast]);
@@ -177,13 +198,13 @@ function UnoArea({ interactableID }: { interactableID: InteractableID }): JSX.El
         <div style={{ width: '100%' }}>
           {showGame ? (
             <>
-              <UnoTable interactableID={interactableID} />
+              <UnoTable readyPlayerIDs={readyPlayerIDs} interactableID={interactableID} />
             </>
           ) : (
             <p style={{ fontSize: '20px', fontWeight: 'bold' }}>Waiting Room</p>
           )}
         </div>
-      </Flex>
+      </Flex>      
     </Container>
   );
 }
