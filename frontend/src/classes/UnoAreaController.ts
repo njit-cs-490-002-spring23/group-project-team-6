@@ -13,7 +13,6 @@ import {
 import {BASE_PATH, CARD_BACK_IMAGE} from '../components/Town/interactables/UnoTable';
 import PlayerController from './PlayerController';
 import GameAreaController, { GameEventTypes } from './GameAreaController';
-import videoPlayer from '../../../townService/src/lib/Player';
 
 export const PLAYER_NOT_IN_UNO_GAME_ERROR = 'Player is not in Uno game';
 export const NO_UNO_GAME_IN_PROGRESS_ERROR = 'No Uno game in progress';
@@ -44,6 +43,8 @@ export default class UnoAreaController extends GameAreaController<UnoGameState, 
 
   public justPlayedPlayerID: PlayerID = "";
 
+  public postColorChangeStatus = false;
+
   /**
    * Returns the hand of the player.
    */
@@ -66,10 +67,6 @@ public isActive(): boolean {
   return this.occupants.find(eachOccupant => eachOccupant.id === this._model.game?.nextPlayerID);
 }
 */
-
-get videoPlayers(): videoPlayer[] {
-  this.
-}
 
 get playersHands(): PlayerHands2DArray | undefined {
   return this._model.game?.state.playersHands;
@@ -234,6 +231,7 @@ protected _updateFrom( newModel: GameArea<UnoGameState>): void {
     });
     this._instanceID = gameID;
     this.colorChange = false;
+    this.postColorChangeStatus = true;
     this.justPlayedPlayerID = "";
   }
 
@@ -255,6 +253,7 @@ public async makeMove( action: UnoMove): Promise<void> {
         gameID: instanceID,
         move : action,
       })
+    this.postColorChangeStatus = false
   }
 }
 

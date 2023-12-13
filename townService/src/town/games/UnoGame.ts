@@ -366,8 +366,16 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     this.cardImages.push(wildCard.src); // Push the wild card src
     this.deckOfCards.push(wildCard);
     this.cardImages.push(wildCard.src); // Push the wild card src
+    this.deckOfCards.push(wildCard);
+    this.cardImages.push(wildCard.src); // Push the wild card src
+    this.deckOfCards.push(wildCard);
+    this.cardImages.push(wildCard.src); // Push the wild card src
     this.deckOfCards.push(wildDrawFourCard);
     this.cardImages.push(wildDrawFourCard.src); // Push the wild draw four card src
+    this.deckOfCards.push(wildDrawFourCard);
+    this.cardImages.push(wildDrawFourCard.src);
+    this.deckOfCards.push(wildDrawFourCard);
+    this.cardImages.push(wildDrawFourCard.src);
     this.deckOfCards.push(wildDrawFourCard);
     this.cardImages.push(wildDrawFourCard.src);
   }
