@@ -45,3 +45,25 @@ Create a `.env` file in the `frontend` directory, with the line: `NEXT_PUBLIC_TO
 
 In the `frontend` directory, run `npm start` (again, you'll need to run `npm install` the very first time). After several moments (or minutes, depending on the speed of your machine), a browser will open with the frontend running locally.
 The frontend will automatically re-compile and reload in your browser if you change any files in the `frontend/src` directory.
+
+# Uno Area
+
+The Uno Area feature in this version of covey town provides an area for players within Covey Town to play a card game called Uno with 1-5 other players.
+
+## Uno Game
+
+Uno is a fun, interactive card game that is great for all ages. In the game you play a card that matches either the color or the value of the most recent card played, and has some special features for certain cards. See https://en.wikipedia.org/wiki/Uno_(card_game) for more specific rules and information.
+
+### Playing the Game
+
+When logging into this version of Covey.town, an "Uno Area" will be outlined on the map. By default, users spawn into the Uno Area. To enter the area, press spacebar, as it is an interactable area, just like others in the game. You will join a waiting room, and will have an option join the game with a button at the top. If there is already a game in progress, you will have to wait for the game to be over to join. Be quick! After you are in the game, press "Ready Up". The button will turn green and mark you as ready, press again to mark yourself as not ready. When enough players are in the game(2), a deal cards button will appear. In order for the deal cards button to work all players in the game must be ready.
+
+7 cards will be dealt to each player. There will be a turn indicator at the top to let you know who's turn it is. If it is your turn, play any card by clicking on it! If you play a wild card, you will be promted to choose the color for the next player to play. Once you have no cards left you are the winner! Everybody else loses. Press join game again to join another game.
+
+To leave the game, press the x in the upper right corner.
+
+Please note that if you leave the game, you will not be allowed back in.
+
+At any point in the game a dropdown menu of all the users in the game will be available for you to see.
+
+Have fun!
