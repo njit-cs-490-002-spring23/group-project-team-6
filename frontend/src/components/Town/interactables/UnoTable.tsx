@@ -12,6 +12,7 @@ import useTownController from '../../../hooks/useTownController';
 
 type UnoTableProps = {
   children?: React.ReactNode;
+  readyPlayerIDs: string[];
 };
 
 export const BASE_PATH = '/assets/images/uno_assets_2d/PNGs/small';
@@ -37,6 +38,8 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
   ]);
   const [colorChange, setColorChange] = useState(gameAreaController.colorChange);
   const [justPlayedPlayerID, setjustPlayedPlayerID] = useState(gameAreaController.justPlayedPlayerID);
+  const [isReady, setIsReady] = useState(false);
+
 
   const toast = useToast();
   useEffect(() => {
@@ -124,6 +127,7 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
                   title: "Error Making Move",
                   description: (e as Error).toString(),
                   status: 'error',
+                  duration: 1000,
                 });
               }
             }}>
@@ -170,6 +174,7 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
                 title: "Error Drawing Card",
                 description: (e as Error).toString(),
                 status: 'error',
+                duration: 1000,
               });
             }
           }}>
@@ -243,26 +248,6 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
       </>
     );
   };
-  
-  const playerHandComponent = (listOfCards: Card[]) => {
-    const cardStyle = {
-      width: '30px',
-      height: '40px',
-    };
-
-    return (
-      <div className="player-hand" style={{ display: 'flex'}}>
-        {listOfCards.map((card: Card) => (
-          <Image
-            key={card.src}
-            src={card.src}
-            alt={card.color}
-            style={cardStyle}
-          ></Image>
-        ))}
-      </div>
-    );
-  };
 
   const tableStyle: React.CSSProperties = {
     position: 'relative',
@@ -284,9 +269,31 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
   };
 
   const playerHandStyle: React.CSSProperties = {
-    position: 'relative',
+    position: 'absolute',
   };
-
+  const handleReadyClick = async () => {
+    try {
+      await gameAreaController.readyUp();
+      setIsReady(!isReady);
+      toast({
+        title: isReady ? 'You are not ready!' : 'You are ready!',
+        description: isReady ? 'You Have Unreadied' : 'You Have Readied Up',
+        status: 'success',
+        duration: 1000,
+      });
+    } catch (err) {
+      toast({
+        title: 'Error readying Up',
+        description: (err as Error).toString(),
+        status: 'error',
+        duration: 1000,
+      });
+    }
+  };
+  const buttonStyle = {
+    backgroundColor: isReady ? 'green' : 'red',
+    color: 'white',
+  };
   if (gameStatus === 'IN_PROGRESS') {
     return (
       <Flex style={tableStyle}>
@@ -297,10 +304,10 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
          colorSquareComponent() : tableCardsComponent(tableCards)
         }
         </Flex> 
-        <Flex style={{...playerHandStyle, bottom: '10%'}} justify="center">
+        <Flex style={{...playerHandStyle, bottom: '10%', backgroundColor: 'rgba(0,0,0,.7)'}} justify="center">
           {playerHandComponentButtons(ourHand)}
         </Flex>
-        <Flex>
+        <Flex style={{ position: 'absolute', top: '10%'}}>
           {playerComponents}
         </Flex>
       </Flex>
@@ -309,23 +316,17 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
   else {
     return (
       <Flex direction="column" align="center" style={tableStyle}>
-      <Button 
-        onClick={async () => {
-          try {
-            await gameAreaController.readyUp();
-          } catch (err) {
-            toast({
-              title: 'Error readying Up',
-              description: (err as Error).toString(),
-              status: 'error',
-            });
-          }
-        }} 
-        variant="outline" 
-        colorScheme="teal" 
-        size="lg">
-        Ready Up
-      </Button>
+        {
+          gameStatus === 'WAITING_TO_START' &&
+          <Button 
+            onClick={handleReadyClick} 
+            style={buttonStyle}
+            variant="outline" 
+            colorScheme="teal" 
+            size="lg">
+            {isReady ? 'Unready' : 'Ready Up'}
+          </Button>
+        }
       {
         players.length > 1 &&
         <Button 
@@ -337,6 +338,7 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
                 title: 'Error Dealing Cards',
                 description: (err as Error).toString(),
                 status: 'error',
+                duration: 1000,
               });
             }
           }} 
