@@ -1,3 +1,9 @@
+/*
+ * This section of code is adapted from or inspired by code available on GitHub:
+ * Repository: https://github.com/neu-se/covey.town
+ * File: covey.town/townService/src/town/games/TicTacToeArea.ts
+ * Author: Jonathan Bell
+ */
 import {
   Accordion,
   AccordionButton,
@@ -67,6 +73,13 @@ function UnoArea({ interactableID }: { interactableID: InteractableID }): JSX.El
 
 
   const toast = useToast();
+
+  /**
+   * Initializes and manages the state and subscriptions for the Uno game area.
+   * 
+   * This function sets up listeners for game updates and player readiness. It manages state for game
+   * status, player list, and game control actions like joining and starting the game.
+   */
   useEffect(() => {
     const handleReadyPlayersListUpdated = (updatedReadyPlayerIDs: PlayerID[]) => {
       setReadyPlayerIDs(updatedReadyPlayerIDs);
