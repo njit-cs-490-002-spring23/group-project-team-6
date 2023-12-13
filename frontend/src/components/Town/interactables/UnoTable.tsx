@@ -382,7 +382,7 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
         <Flex style={{...playerHandStyle, bottom: '0%', backgroundColor: 'rgba(0,0,0,.7)'}} justify="center">
           {playerHandComponentButtons(ourHand)}
         </Flex>
-        <Flex style={{ position: 'absolute', top: '10%'}}>
+        <Flex>
           {playerComponents}
         </Flex>
         {colorChangeMessageComponent()}
