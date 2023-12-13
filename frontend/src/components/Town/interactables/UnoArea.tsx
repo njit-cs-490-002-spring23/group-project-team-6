@@ -30,7 +30,7 @@ import UnoAreaController from '../../../classes/UnoAreaController';
 import PlayerController from '../../../classes/PlayerController';
 import { useInteractable, useInteractableAreaController } from '../../../classes/TownController';
 import useTownController from '../../../hooks/useTownController';
-import { GameResult, GameStatus, InteractableID } from '../../../types/CoveyTownSocket';
+import { GameStatus, InteractableID } from '../../../types/CoveyTownSocket';
 import GameAreaInteractable from './GameArea';
 
 /**
@@ -67,7 +67,6 @@ function UnoArea({ interactableID }: { interactableID: InteractableID }): JSX.El
   const [joiningGame, setJoiningGame] = useState(false);
   const [players, setplayers] = useState<PlayerController[]>(gameAreaController.players);
   const [whoseTurn, setWhoseTurn] = useState<PlayerController | undefined>(gameAreaController.whoseTurn);
-  const canDealCards = players.length >= 2;
   const [readyPlayerIDs, setReadyPlayerIDs] = useState<PlayerID[]>([]);
   type PlayerID = string;
 
@@ -140,8 +139,8 @@ function UnoArea({ interactableID }: { interactableID: InteractableID }): JSX.El
   } else {
     let joinGameButton = <></>;
     if (
-      (gameAreaController.status === 'WAITING_TO_START' && !gameAreaController.isPlayer) ||
-      gameAreaController.status === 'OVER'
+      (gameStatus === 'WAITING_TO_START' && !gameAreaController.isPlayer) ||
+      gameStatus === 'OVER'
     ) {
       joinGameButton = (
         <Button

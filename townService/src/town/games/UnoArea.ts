@@ -27,7 +27,6 @@ export default class UnoArea extends GameArea<UnoGame> {
   }
 
   private _stateUpdated(updatedState: GameInstance<UnoGameState>) {
-    console.log("this._stateUpdated called");
     if (updatedState.state.status === 'OVER') {
       const game = this._game;
       if (game === undefined)
@@ -49,7 +48,6 @@ export default class UnoArea extends GameArea<UnoGame> {
         });
     }
     this._emitAreaChanged();
-    console.log("this._emitAreaChanged(); returned");
   }
 
 
@@ -159,11 +157,8 @@ export default class UnoArea extends GameArea<UnoGame> {
       if (!game) {
         throw new InvalidParametersError(GAME_NOT_IN_PROGRESS_MESSAGE);
       }
-      console.log("game.shuffleAndDealCards(); Calling now");
       game.shuffleAndDealCards();
-      console.log("game.shuffleAndDealCards(); returned");
       this._stateUpdated(game.toModel());
-      console.log("this._stateUpdated(game.toModel()); returned");
       return { gameID: game.id } as InteractableCommandReturnType<CommandType>;
     }
     

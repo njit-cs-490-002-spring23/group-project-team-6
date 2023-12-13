@@ -1,4 +1,9 @@
-import UnoPlayer from '../../lib/UnoPlayer';
+/*
+ * This section of code is adapted from or inspired by code available on GitHub:
+ * Repository: https://github.com/neu-se/covey.town
+ * File: covey.town/townService/src/town/games/GameArea.ts
+ * Author: Jonathan Bell
+ */
 import Player from '../../lib/Player';
 import {
   GameArea as GameAreaModel,

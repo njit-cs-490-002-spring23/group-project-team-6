@@ -57,9 +57,9 @@ export default class UnoAreaController extends GameAreaController<UnoGameState, 
 
   public _readyPlayerIDs: Set<PlayerID> = new Set();
 
-  public _readyPlayerIDs: Set<PlayerID> = new Set();
-
   private _readyStatus: Record<PlayerID, boolean> = {};
+
+  public postColorChangeStatus = false;
 
   /**
    * Returns the hand of the player.
@@ -330,7 +330,8 @@ export default class UnoAreaController extends GameAreaController<UnoGameState, 
     });
     this._instanceID = gameID;
     this.colorChange = false;
-    this.justPlayedPlayerID = '';
+    this.postColorChangeStatus = true;
+    this.justPlayedPlayerID = "";
   }
 
   /**
@@ -350,6 +351,7 @@ export default class UnoAreaController extends GameAreaController<UnoGameState, 
         gameID: instanceID,
         move: action,
       });
+    this.postColorChangeStatus = false
     }
   }
   

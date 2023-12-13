@@ -1,3 +1,9 @@
+/*
+ * This section of code is adapted from or inspired by code available on GitHub:
+ * Repository: https://github.com/neu-se/covey.town
+ * File: covey.town/townService/src/town/games/Game.ts
+ * Author: Jonathan Bell
+ */
 import { nanoid } from 'nanoid';
 import {
   GameInstance,
@@ -9,6 +15,7 @@ import {
 } from '../../types/CoveyTownSocket';
 import UnoPlayer from '../../lib/UnoPlayer';
 import Player from '../../lib/Player';
+import InvalidParametersError, { PLAYER_NOT_IN_GAME_MESSAGE } from '../../lib/InvalidParametersError';
 
 /**
  * This class is the base class for all games. It is responsible for managing the
@@ -100,11 +107,12 @@ export default abstract class Game<StateType extends GameState, MoveType> {
     const unoPlayer = this._unoPlayers.find((_player) => _player.id === player.id);
     if (unoPlayer)
       this._leave(unoPlayer);
+    else
+      throw new InvalidParametersError(PLAYER_NOT_IN_GAME_MESSAGE);
     this._players = this._players.filter(p => p.id !== player.id);
   }
 
   public toModel(): GameInstance<StateType> {
-    console.log("game.toModel() called");
     return {
       state: this._state,
       id: this.id,

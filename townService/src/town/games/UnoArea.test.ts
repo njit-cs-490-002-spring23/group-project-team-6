@@ -28,6 +28,8 @@ class TestingGame extends Game<UnoGameState, UnoMove> {
         currentColor: 'None',
         currentCardValue: 'None',
         direction: 'Counter_Clockwise',
+        playersHands: [],
+        players: [],
     });
   }
 
@@ -40,6 +42,16 @@ class TestingGame extends Game<UnoGameState, UnoMove> {
   // eslint-disable-next-line class-methods-use-this
   public updateColor(): void {}
 
+  // eslint-disable-next-line class-methods-use-this
+  public shuffleAndDealCards(): boolean {
+    return true;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  public get NextPlayerID(): string {
+    return "";
+  }
+
   public endGame(winner?: string) {
     this.state = {
       ...this.state,
@@ -49,7 +61,7 @@ class TestingGame extends Game<UnoGameState, UnoMove> {
   }
 
   protected _join(player: UnoPlayer): void {
-      this._players.push(player);
+      this._unoPlayers.push(player);
     }
 
   // eslint-disable-next-line class-methods-use-this
@@ -59,7 +71,7 @@ class TestingGame extends Game<UnoGameState, UnoMove> {
     player.readyUp = !player.readyUp;
     let allPlayersReady = true;
     for (let j = 0; j < this._players.length; j++) {
-      if (!this._players[j].readyUp){
+      if (!this._unoPlayers[j].readyUp){
         allPlayersReady = false;
         break;
       }
@@ -125,8 +137,7 @@ describe('UnoArea', () => {
 
           const joinSpy = jest.spyOn(game, 'join');
           const gameID2 = gameArea.handleCommand({ type: 'JoinGame' }, player2).gameID;
-          const unoPlayer2: UnoPlayer | undefined = game._players.find(p => p.id === player2.id);
-          expect(joinSpy).toHaveBeenCalledWith(unoPlayer2);
+          expect(joinSpy).toHaveBeenCalledWith(player2);
           expect(gameID).toEqual(gameID2);
           expect(interactableUpdateSpy).toHaveBeenCalledTimes(2);
         });
@@ -151,7 +162,7 @@ describe('UnoArea', () => {
       it('should throw an error when there is no game in progress', () => {
         expect(() =>
           gameArea.handleCommand(
-            { type: 'GameMove', move: { cardPlaced: {color: "Blue", value: "0"} }, gameID: nanoid() },
+            { type: 'GameMove', move: { cardPlaced: {color: "Blue", value: "0", src: ''} }, gameID: nanoid() },
             player1,
           ),
         ).toThrowError(GAME_NOT_IN_PROGRESS_MESSAGE);
@@ -172,13 +183,13 @@ describe('UnoArea', () => {
         it('should throw an error when the game ID does not match', () => {
           expect(() =>
             gameArea.handleCommand(
-              { type: 'GameMove', move: { cardPlaced: {color: "Blue", value: "0"} }, gameID: nanoid() },
+              { type: 'GameMove', move: { cardPlaced: {color: "Blue", value: "0", src: ''} }, gameID: nanoid() },
               player1,
             ),
           ).toThrowError(GAME_ID_MISSMATCH_MESSAGE);
         });
         it('should dispatch the move to the game and call _emitAreaChanged', () => {
-          const move: UnoMove = { cardPlaced: {color: "Blue", value: "0"} };
+          const move: UnoMove = { cardPlaced: {color: "Blue", value: "0", src: ''} };
           const applyMoveSpy = jest.spyOn(game, 'applyMove');
           gameArea.handleCommand({ type: 'GameMove', move, gameID }, player1);
           expect(applyMoveSpy).toHaveBeenCalledWith({
@@ -191,7 +202,7 @@ describe('UnoArea', () => {
           expect(interactableUpdateSpy).toHaveBeenCalledTimes(1);
         });
         it('should not call _emitAreaChanged if the game throws an error', () => {
-          const move: UnoMove = { cardPlaced: {color: "Blue", value: "0"} };
+          const move: UnoMove = { cardPlaced: {color: "Blue", value: "0", src: ''} };
           const applyMoveSpy = jest.spyOn(game, 'applyMove').mockImplementationOnce(() => {
             throw new Error('Test Error');
           });
@@ -209,7 +220,7 @@ describe('UnoArea', () => {
         });
         describe('when the game is over, it records a new row in the history and calls _emitAreaChanged', () => {
           test('when first player wins', () => {
-            const move: UnoMove = { cardPlaced: {color: "Blue", value: "0"} };
+            const move: UnoMove = { cardPlaced: {color: "Blue", value: "0", src: ''} };
             jest.spyOn(game, 'applyMove').mockImplementationOnce(() => {
               game.endGame(player1.id);
             });
@@ -228,7 +239,7 @@ describe('UnoArea', () => {
             expect(interactableUpdateSpy).toHaveBeenCalledTimes(1);
           });
           test('when last player wins', () => {
-            const move: UnoMove = { cardPlaced: {color: "Blue", value: "0"} };
+            const move: UnoMove = { cardPlaced: {color: "Blue", value: "0", src: ''} };
             jest.spyOn(game, 'applyMove').mockImplementationOnce(() => {
               game.endGame(player4.id);
             });
@@ -274,9 +285,8 @@ describe('UnoArea', () => {
           }
           expect(interactableUpdateSpy).toHaveBeenCalledTimes(1);
           const leaveSpy = jest.spyOn(game, 'leave');
-          const unoPlayer1: UnoPlayer | undefined = game._players.find(p => p.id === player1.id);
           gameArea.handleCommand({ type: 'LeaveGame', gameID }, player1);
-          expect(leaveSpy).toHaveBeenCalledWith(unoPlayer1);
+          expect(leaveSpy).toHaveBeenCalledWith(player1);
           expect(interactableUpdateSpy).toHaveBeenCalledTimes(2);
         });
         it('should not call _emitAreaChanged if the game throws an error', () => {
@@ -291,8 +301,7 @@ describe('UnoArea', () => {
           expect(() =>
             gameArea.handleCommand({ type: 'LeaveGame', gameID: game.id }, player1),
           ).toThrowError('Test Error');
-          const unoPlayer1: UnoPlayer | undefined = game._players.find(p => p.id === player1.id);
-          expect(leaveSpy).toHaveBeenCalledWith(unoPlayer1);
+          expect(leaveSpy).toHaveBeenCalledWith(player1);
           expect(interactableUpdateSpy).not.toHaveBeenCalled();
         });
         it('should update the history if the game is over', () => {
@@ -339,7 +348,7 @@ describe('UnoArea', () => {
         it('should dispatch the action to the game and call _emitAreaChanged', () => {
           const drawFromDeckSpy = jest.spyOn(game, 'drawFromDeck');
           gameArea.handleCommand({ type: 'DrawFromDeck',}, player1);
-          const unoPlayer1: UnoPlayer | undefined = game._players.find(p => p.id === player1.id);
+          const unoPlayer1: UnoPlayer | undefined = game._unoPlayers.find(p => p.id === player1.id);
           expect(drawFromDeckSpy).toHaveBeenCalledWith(unoPlayer1);
           expect(interactableUpdateSpy).toHaveBeenCalledTimes(1);
         });
@@ -353,7 +362,7 @@ describe('UnoArea', () => {
               player1,
             ),
           ).toThrowError('Test Error');
-          const unoPlayer1: UnoPlayer | undefined = game._players.find(p => p.id === player1.id);
+          const unoPlayer1: UnoPlayer | undefined = game._unoPlayers.find(p => p.id === player1.id);
           expect(drawFromDeckSpy).toHaveBeenCalledWith(unoPlayer1);
           expect(interactableUpdateSpy).not.toHaveBeenCalled();
         });
@@ -425,7 +434,7 @@ describe('UnoArea', () => {
         it('should dispatch the action to the game and call _emitAreaChanged', () => {
           const readyUpSpy = jest.spyOn(game, 'playerReadyUp');
           gameArea.handleCommand({ type: 'ReadyUp'}, player1);
-          const unoPlayer1: UnoPlayer | undefined = game._players.find(p => p.id === player1.id);
+          const unoPlayer1: UnoPlayer | undefined = game._unoPlayers.find(p => p.id === player1.id);
           expect(readyUpSpy).toHaveBeenCalledWith(unoPlayer1);
           expect(interactableUpdateSpy).toHaveBeenCalledTimes(1);
         });
@@ -439,7 +448,7 @@ describe('UnoArea', () => {
               player1,
             ),
           ).toThrowError('Test Error');
-          const unoPlayer1: UnoPlayer | undefined = game._players.find(p => p.id === player1.id);
+          const unoPlayer1: UnoPlayer | undefined = game._unoPlayers.find(p => p.id === player1.id);
           expect(readyUpSpy).toHaveBeenCalledWith(unoPlayer1);
           expect(interactableUpdateSpy).not.toHaveBeenCalled();
         });

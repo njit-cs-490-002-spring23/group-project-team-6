@@ -1,3 +1,9 @@
+/*
+ * This section of code is adapted from or inspired by code available on GitHub:
+ * Repository: https://github.com/neu-se/covey.town
+ * File: covey.town/townService/src/town/games/GameAreaFactory.ts
+ * Author: Jonathan Bell
+ */
 import { ITiledMapObject } from '@jonbell/tiled-map-type-guard';
 import { BoundingBox, TownEmitter } from '../../types/CoveyTownSocket';
 import InteractableArea from '../InteractableArea';
