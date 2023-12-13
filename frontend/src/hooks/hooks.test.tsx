@@ -7,11 +7,11 @@ import ConversationAreaController, {
   ConversationAreaEvents,
   NO_TOPIC_STRING,
   useConversationAreaTopic,
-} from '../classes/interactable/ConversationAreaController';
+} from '../classes/ConversationAreaController';
 import {
   BaseInteractableEventMap,
   useInteractableAreaOccupants,
-} from '../classes/interactable/InteractableAreaController';
+} from '../classes/InteractableAreaController';
 import PlayerController from '../classes/PlayerController';
 import TownController, {
   TownEvents,
