@@ -54,6 +54,8 @@ The Uno Area feature in this version of covey town provides an area for players 
 
 Uno is a fun, interactive card game that is great for all ages. In the game you play a card that matches either the color or the value of the most recent card played, and has some special features for certain cards. See https://en.wikipedia.org/wiki/Uno_(card_game) for more specific rules and information.
 
+![Uno Architecture](Backend_Architecture_UML_Diagram.png)
+
 ### Playing the Game
 
 When logging into this version of Covey.town, an "Uno Area" will be outlined on the map. By default, users spawn into the Uno Area. To enter the area, press spacebar, as it is an interactable area, just like others in the game. You will join a waiting room, and will have an option join the game with a button at the top. If there is already a game in progress, you will have to wait for the game to be over to join. Be quick! After you are in the game, press "Ready Up". The button will turn green and mark you as ready, press again to mark yourself as not ready. When enough players are in the game(2), a deal cards button will appear. In order for the deal cards button to work all players in the game must be ready.
