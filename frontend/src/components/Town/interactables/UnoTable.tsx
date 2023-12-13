@@ -188,7 +188,7 @@ const unoTable: React.FC<UnoTableProps & { interactableID: InteractableID }> = (
     }
     return (
       <Flex className="colorChangeMessageComponent" style={messagePopUpStyle}>
-        Curent Color: {currentColor}
+        Current Color: {currentColor}
       </Flex>
     )
   }
