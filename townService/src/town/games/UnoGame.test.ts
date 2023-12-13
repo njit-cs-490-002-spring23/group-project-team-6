@@ -1,4 +1,4 @@
-import { createPlayerForTesting, createUnoPlayerForTesting } from '../../TestUtils';
+import { createPlayerForTesting } from '../../TestUtils';
 import {
   PLAYER_NOT_IN_GAME_MESSAGE,
   PLAYER_ALREADY_IN_GAME_MESSAGE,

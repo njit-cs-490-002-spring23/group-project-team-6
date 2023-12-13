@@ -19,7 +19,6 @@ import {
   UnoGameDirection,
 } from '../../types/CoveyTownSocket';
 import UnoPlayer from '../../lib/UnoPlayer';
-import Player from '../../lib/Player';
 
 const MAX_PLAYERS = 6;
 const MIN_PLAYERS = 2;
@@ -52,7 +51,6 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     this.discardPile = [];
   }
 
-  // getters and setters for UnoGameState - Used for testing not in game.
 
   get mostRecentMove(): UnoMove | undefined {
     return this.state.mostRecentMove;
@@ -122,6 +120,10 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
 
   // public methods to be used in game
 
+  /**
+   * Public method to mark a player as ready or not ready for the game.
+   * @param {UnoPlayer} player - The player to mark as ready.
+   */
   // eslint-disable-next-line class-methods-use-this
   public playerReadyUp(player: UnoPlayer): void {
     player.readyUp = !player.readyUp;
@@ -131,6 +133,9 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     return this._getNextPlayer()?.id || "";
   }
 
+  /**
+   * Private method to deal cards to all players in the game.
+   */
   public _dealCards(): void {
     this._shuffleDeck();
     for (let i = 0; i < 7; i++) {
@@ -140,6 +145,11 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     }
   }
 
+  /**
+   * Public method to draw a card from the deck for a player.
+   * @param {UnoPlayer} player - The player to draw a card for.
+   * @throws {InvalidParametersError} if the player is not in the game.
+   */
   public drawFromDeck(player: UnoPlayer): void {
     let card = this.deckOfCards.pop();
     const playersHandsArray = this.state.playersHands;
@@ -181,6 +191,10 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     }
   }
 
+  /**
+   * Public method to update the current color of the game.
+   * @param {Color} color - The new color to set.
+   */
   public updateColor(color: Color): void {
     this.state = {
       ...this.state,
@@ -206,7 +220,6 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
    * If the move results in a win, updates the game's state to set the status to OVER and sets the winner to the player who made the move.
    * If the move results in a player only having, one card left, makes note that the player has UNO
    * A player wins if they have 0 cards left.
-   *
    * @param move The move to apply to the game
    * @throws InvalidParametersError if the move is invalid (with specific message noted above)
    */
@@ -243,6 +256,11 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     this.state.numberOfMovesSoFar++;
   }
 
+  /**
+   * Private method to join a player to the Uno game.
+   * @param {UnoPlayer} player - The player to join.
+   * @throws {Error} if the player is already in the game or if the game is full.
+   */
   public _join(player: UnoPlayer): void {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     if (this._unoPlayers.some(existingPlayer => existingPlayer.id === player.id)) {
@@ -268,11 +286,16 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     this._updatePlayerPositions();
   }
 
+  /**
+   * Private method to leave a player from the Uno game.
+   * @param {UnoPlayer} player - The player to leave.
+   * @throws {InvalidParametersError} if the player is not in the game.
+   */
   public _leave(player: UnoPlayer): void {
     const playerIndex = this._players.findIndex(p => p.id === player.id);
 
     if (playerIndex === -1) {
-      throw new Error(PLAYER_NOT_IN_GAME_MESSAGE);
+      throw new InvalidParametersError(PLAYER_NOT_IN_GAME_MESSAGE);
     }
     if (player.id === this.currentMovePlayer)
       this.state = {
@@ -301,6 +324,10 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
 
   // private methods used by class
 
+  /**
+   * Public method to shuffle and deal cards to players, starting the game.
+   * @returns {boolean} True if the game was successfully started, false otherwise.
+   */
   public shuffleAndDealCards(): boolean {
     let allPlayersReady = true;
     for (let j = 0; j < this._unoPlayers.length; j++) {
@@ -322,6 +349,9 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     return false;
   }
 
+  /**
+   * Private method to create the Uno deck with standard cards and images.
+   */
   private _createDeck(): void {
     const colors: Color[] = ['Red', 'Green', 'Blue', 'Yellow'];
     const values: Value[] = [
@@ -380,6 +410,9 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     this.cardImages.push(wildDrawFourCard.src);
   }
 
+  /**
+   * Private method to set the player to left and player to right of each player in the game.
+   */
   private _updatePlayerPositions(): void {
     this._unoPlayers.forEach((player, index, arr) => {
       player.playerToLeft = arr[(index + arr.length - 1) % arr.length];
@@ -387,6 +420,9 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     });
   }
 
+  /**
+   * Private method to check if a move results in a winning condition.
+   */
   private _checkIfWinningMove(): void {
     const player: UnoPlayer | undefined = this._unoPlayers.find(_player => _player.id === this.state.currentMovePlayer);
     if (player && player.cardsInHand.length === 0) {
@@ -398,6 +434,11 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     }
   }
 
+  /**
+   * Private method to get the next player in the game.
+   * @returns {UnoPlayer | undefined} The next player in the game.
+   * @throws {InvalidParametersError} if the current player is not in the game.
+   */
   private _getNextPlayer(): UnoPlayer | undefined {
     const player: UnoPlayer | undefined = this._unoPlayers.find(_player => _player.id === this.state.currentMovePlayer);
     if (player && player.playerToRight && player.playerToLeft){
@@ -408,6 +449,10 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
       throw new InvalidParametersError(PLAYER_NOT_IN_GAME_MESSAGE);
   }
 
+   /**
+   * Private method to update the game state after a move is played.
+   * @param {UnoMove} move - The move to apply to the game.
+   */
   private _applyMoveUpdateGameState(move: UnoMove): void {
     const player: UnoPlayer | undefined = this._unoPlayers.find(_player => _player.id === this.state.currentMovePlayer);
     if (player){
@@ -440,6 +485,10 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     }
   }
 
+  /**
+   * Private method to handle a Wild card being placed in the game.
+   * @param {UnoMove} move - The move representing the placement of the Wild card.
+   */
   private _wildCardPlaced(move: UnoMove): void {
     this.state = {
       ...this.state,
@@ -448,6 +497,10 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     this._applyMoveUpdateGameState(move);
   }
 
+   /**
+   * Private method to handle a Wild Draw Four card being placed in the game.
+   * @param {UnoMove} move - The move representing the placement of the Wild Draw Four card.
+   */
   private _wildDrawfourCardPlaced(move: UnoMove): void {
     const player = this._getNextPlayer();
     if (player){
@@ -462,6 +515,10 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     }
   }
 
+   /**
+   * Private method to handle a Draw Two card being placed in the game.
+   * @param {UnoMove} move - The move representing the placement of the Draw Two card.
+   */
   private _drawtwoCardPlaced(move: UnoMove): void {
     const player = this._getNextPlayer();
     if (player) {
@@ -476,6 +533,10 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     }
   }
 
+   /**
+   * Private method to handle a Skip card being placed in the game.
+   * @param {UnoMove} move - The move representing the placement of the Skip card.
+   */
   private _skipCardPlaced(move: UnoMove): void {
     this._applyMoveUpdateGameState(move);
     const player = this._getNextPlayer();
@@ -486,6 +547,10 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
       }
   }
 
+  /**
+   * Private method to handle a Reverse card being placed in the game.
+   * @param {UnoMove} move - The move representing the placement of the Reverse card.
+   */
   private _reverseCardPlaced(move: UnoMove): void {
     const direction: UnoGameDirection = this.state.direction === 'Clockwise' ? 'Counter_Clockwise' : 'Clockwise';
     this.state = {
@@ -495,7 +560,10 @@ export default class UnoGame extends Game<UnoGameState, UnoMove> {
     this._applyMoveUpdateGameState(move);
   }
 
-  // Fisher-Yates shuffle
+  /**
+   * Private method to shuffle the Uno deck using the Fisher-Yates algorithm.
+   * @see https://basarat.gitbook.io/algorithms/shuffling
+   */
   private _shuffleDeck(): void {
     for (let i = this.deckOfCards.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));

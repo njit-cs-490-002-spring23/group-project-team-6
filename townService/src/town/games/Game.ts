@@ -1,3 +1,9 @@
+/*
+ * This section of code is adapted from or inspired by code available on GitHub:
+ * Repository: https://github.com/neu-se/covey.town
+ * File: covey.town/townService/src/town/games/Game.ts
+ * Author: Jonathan Bell
+ */
 import { nanoid } from 'nanoid';
 import {
   GameInstance,

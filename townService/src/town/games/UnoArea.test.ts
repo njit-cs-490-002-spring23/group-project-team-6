@@ -137,7 +137,6 @@ describe('UnoArea', () => {
 
           const joinSpy = jest.spyOn(game, 'join');
           const gameID2 = gameArea.handleCommand({ type: 'JoinGame' }, player2).gameID;
-          const unoPlayer2: UnoPlayer | undefined = game._unoPlayers.find(p => p.id === player2.id);
           expect(joinSpy).toHaveBeenCalledWith(player2);
           expect(gameID).toEqual(gameID2);
           expect(interactableUpdateSpy).toHaveBeenCalledTimes(2);
