@@ -54,7 +54,7 @@ The Uno Area feature in this version of covey town provides an area for players 
 
 Uno is a fun, interactive card game that is great for all ages. In the game you play a card that matches either the color or the value of the most recent card played, and has some special features for certain cards. See https://en.wikipedia.org/wiki/Uno_(card_game) for more specific rules and information.
 
-![Uno Architecture](Backend_Architecture_UML_Diagram.png)
+![Uno Architecture](docs/Backend_Architecture_UML_Diagram.png)
 
 ### Playing the Game
 
